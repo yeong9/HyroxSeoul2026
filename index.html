@@ -115,7 +115,8 @@ h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-
 .team+.team{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px}
 .team .x-btn{top:-6px;right:-10px}
 .team+.team .x-btn{top:6px}
-.time.tbd{font-size:32px;line-height:1.1}
+.time.tbd{font-size:21px;line-height:1.15;letter-spacing:0;text-align:center}
+.time.tbd i{display:block;font-style:normal}
 .cnt{margin-top:6px;align-self:flex-start;font-size:11.5px;font-weight:600;color:var(--mute);background:var(--bg);border-radius:999px;padding:1px 8px}
 .row1{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent);padding:2px 10px;border-radius:999px}
@@ -207,8 +208,9 @@ footer p{margin:0 0 8px}
 .addall{align-self:flex-end;border:0;background:none;color:var(--ink);font-weight:600;font-size:13.5px;text-decoration:underline;text-underline-offset:3px;padding:4px 2px}
 .qclear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:0;border-radius:50%;background:var(--line);color:var(--ink);display:grid;place-items:center;padding:0}
 .qclear[hidden]{display:none}
+.qclear svg{position:static;left:auto;top:auto;transform:none;color:inherit;display:block}
 .field input:focus{outline:none;border-color:var(--ink)}
-.sform select{width:100%;padding:11px 12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-size:14.5px}
+.sform select{width:100%;padding:11px 40px 11px 14px;border-radius:14px;border:1px solid var(--line);font-size:14.5px;-webkit-appearance:none;appearance:none;background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235b6b7c' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center}
 .note{margin:10px 2px 14px;padding:8px 12px;border-left:3px solid var(--line);color:var(--mute);font-size:12.5px;line-height:1.55}
 .hint{margin:10px 2px 0;color:var(--mute);font-size:13px;line-height:1.55}
 .sheet.typing .hint{display:none}
@@ -406,6 +408,10 @@ const E = DATA.rows.map(r => {
   };
 });
 /* XON 출전 명단에는 있지만 시작 리스트에서 아직 찾지 못한 팀: 요일과 디비전만 알고 시간은 미정 */
+/* 같은 날 같은 디비전의 출발 시간 범위 (미정 팀 표시용) */
+const RNG = {};
+DATA.rows.forEach(r => { const k = r[0] + '-' + r[3], c = RNG[k]; if (!c) RNG[k] = [r[1], r[1]]; else { if (r[1] < c[0]) c[0] = r[1]; if (r[1] > c[1]) c[1] = r[1]; } });
+const tbdRange = e => RNG[e.d + '-' + e.w];
 const PH = [[0,4,["윤승용"]],[0,4,["정성직"]],[0,4,["김동홍"]],[0,4,["함정흠"]],[0,4,["이창규"]],[0,4,["이찬희"]],[0,5,["박세윤"]],[0,5,["허지영"]],[0,3,["박영욱","김희윤"]],[0,3,["최혜윤","장한별"]],[1,4,["정하광"]],[1,4,["강지웅"]],[1,4,["황석현"]],[1,4,["박진민"]],[1,4,["이환우"]],[1,4,["허종원"]],[1,4,["박문석"]],[1,7,["양진광","황석현"]],[1,7,["박범석","김선겸"]],[1,7,["공기환","방민규"]],[1,8,["최세원"]],[1,6,["노경민","차소월"]],[1,6,["Lauren","Carly"]],[1,3,["이우봉","김한나"]],[1,3,["이송현","이승희"]],[1,3,["Krystal Lim"]],[2,2,["한승희","엄슬기"]],[2,2,["조보겸","최세원"]],[2,2,["이정수","조보겸"]],[2,2,["엄옥연","아미"]],[2,5,["이한나"]],[2,3,["임정하","박준영"]],[2,11,["이찬희"]],[2,11,["이우봉","조형근","김창만","곽동현"]],[0,5,["정지혜"]],[0,1,["박현준"]],[0,1,["김동민"]],[1,4,["김정범"]],[1,3,["송지연"]],[2,5,["김서연"]],[2,5,["김지혜"]]];
 PH.forEach(([d, w, names], i) => {
   const id = 'p' + d + '-' + (i + 1);
@@ -542,7 +548,7 @@ function search(q, divIdx){
       if (h) out.push({e, h});
     }
   }
-  out.sort((a,b) => a.e.d - b.e.d || sortT(a.e).localeCompare(sortT(b.e)));
+  out.sort((a,b) => a.e.d - b.e.d || a.e.w - b.e.w || sortT(a.e).localeCompare(sortT(b.e)));
   return out;
 }
 
@@ -567,7 +573,7 @@ function searchGym(q, divIdx, g){
     if (segs.length){ if (!matchEntry(e, segs)) continue; }
     out.push({e, h: gymH(e, g)});
   }
-  out.sort((a,b) => a.e.d - b.e.d || sortT(a.e).localeCompare(sortT(b.e)));
+  out.sort((a,b) => a.e.d - b.e.d || a.e.w - b.e.w || sortT(a.e).localeCompare(sortT(b.e)));
   return out;
 }
 
@@ -589,7 +595,7 @@ function renderResults(){
   const shown = r.slice(0, gymSel ? 300 : 30);
   box.innerHTML = shown.map(({e, h}) => {
     const di = divs[e.w], on = inList.has(e.id);
-    return '<div class="res ' + di.cls + '"><div class="rwhen"><b>' + (e.tbd ? '미정' : e.t) + '</b><span>' + DAYS[e.d].d + ' ' + DAYS[e.d].k + '</span></div>' +
+    return '<div class="res ' + di.cls + '"><div class="rwhen"><b>' + (e.tbd ? '–' : e.t) + '</b><span>' + DAYS[e.d].d + ' ' + DAYS[e.d].k + '</span></div>' +
       '<div class="info"><div class="names">' + namesHtml(e, gymSel ? h : null) + '</div>' +
       '<div class="meta"><span class="pill">' + esc(di.label) + '</span>' + (e.tbd ? '<span class="bib">시간 미정</span>' : '<span class="bib">배번 ' + esc(e.b) + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') + gymHtml(e) + '</div></div>' +
       '<button class="addbtn' + (on ? ' on' : '') + '" data-add="' + e.id + '"' + (on ? ' disabled' : '') + '>' + (on ? '추가됨' : '추가') + '</button></div>';
@@ -675,7 +681,7 @@ function card(arr, clash, st, nextMs){
   const bg = mixed ? ' style="background:linear-gradient(to bottom,' + cs.map((c, i) => 'color-mix(in srgb,' + c + ' 14%,var(--surface)) ' + (i * 100 / cs.length) + '% ' + ((i + 1) * 100 / cs.length) + '%').join(',') + ')"' : '';
   const done = arr.every(({e}) => st(e) === 'done');
   return '<article class="card ' + cls + (done ? ' done' : '') + '">' +
-    '<div class="stub"' + bg + '>' + (e0.tbd ? '<b class="time tbd">미정</b><span class="ampm">출발 시간 미정</span>' : '<b class="time">' + e0.t + '</b><span class="ampm">' + ampm(e0.t) + '</span>') +
+    '<div class="stub"' + bg + '>' + (e0.tbd ? (tbdRange(e0) ? '<b class="time tbd"><i>' + tbdRange(e0)[0] + '</i><i>~ ' + tbdRange(e0)[1] + '</i></b><span class="ampm">시간 미정</span>' : '<b class="time tbd">미정</b><span class="ampm">출발 시간 미정</span>') : '<b class="time">' + e0.t + '</b><span class="ampm">' + ampm(e0.t) + '</span>') +
     (arr.length > 1 ? '<span class="cnt">' + arr.length + '팀</span>' : '') + '</div>' +
     '<div class="body">' + arr.map(({x, e}) => teamHtml(x, e, clash, st(e), e.ms === nextMs)).join('') + '</div></article>';
 }
@@ -814,7 +820,7 @@ function renderBoard(){
   const ups = all.filter(({e}) => st(e) === 'up').map(({e}) => e.ms);
   const nextMs = ups.length ? Math.min(...ups) : -1;
   const cardH = it => card([it], it.e.tbd ? 0 : clashMap[it.e.d + it.e.t], st, nextMs);
-  const mergeT = arr => { const m = new Map(); arr.forEach(it => { if (!m.has(it.e.t)) m.set(it.e.t, []); m.get(it.e.t).push(it); }); return [...m.values()].map(g => card(g, 0, st, nextMs)); };
+  const mergeT = arr => { const m = new Map(); arr.forEach(it => { const k = it.e.tbd ? 'tbd' + it.e.w : it.e.t; if (!m.has(k)) m.set(k, []); m.get(k).push(it); }); return [...m.values()].map(g => card(g, 0, st, nextMs)); };
   const awUp = rows => rows.filter(r => now <= r.ms + AWDUR);
   const groups = [];
   const dayHead = d => DAYS[d].d + '(' + DAYS[d].k + ')';
