@@ -214,6 +214,9 @@ footer p{margin:0 0 8px}
 .gymchips button{flex:0 0 auto;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600}
 .gymchips .cnt{margin-left:6px;font-weight:500;font-size:12.5px;opacity:.7}
 .gymchips button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.candhead{margin:14px 2px 2px;padding-top:12px;border-top:1.5px dashed var(--line);display:flex;flex-direction:column;gap:3px}
+.candhead b{font-size:14px}
+.candhead span{font-size:12.5px;color:var(--mute);line-height:1.45}
 .addall{align-self:flex-end;border:0;background:none;color:var(--ink);font-weight:600;font-size:13.5px;text-decoration:underline;text-underline-offset:3px;padding:4px 2px}
 .qclear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:0;border-radius:50%;background:var(--line);color:var(--ink);display:grid;place-items:center;padding:0}
 .qclear[hidden]{display:none}
@@ -529,19 +532,21 @@ function korMatch(seg, person){
 }
 
 /* 검색 */
-function matchEntry(e, segs){
+function matchEntry(e, segs, loose){
   const used = new Set(), hit = [];
   for (const s of segs){
     let found = -1;
     for (let i = 0; i < e.keys.length; i++){
       if (used.has(i)) continue;
-      if (e.keys[i][0].includes(s) || e.keys[i][1].includes(s) || (HAN.test(s) && !HAN.test(e.p[i]) && korMatch(s, e.p[i]))){ found = i; break; }
+      if (e.keys[i][0].includes(s) || e.keys[i][1].includes(s) || (loose && HAN.test(s) && !HAN.test(e.p[i]) && korMatch(s, e.p[i]))){ found = i; break; }
     }
     if (found < 0) return null;
     used.add(found); hit.push(found);
   }
   return hit;
 }
+/* 일치하는 결과가 먼저, 한글→영문 추정 후보는 뒤로 */
+const byDiv = (a, b) => (a.f ? 1 : 0) - (b.f ? 1 : 0) || a.e.d - b.e.d || a.e.w - b.e.w || sortT(a.e).localeCompare(sortT(b.e));
 function search(q, divIdx){
   const raw = q.trim();
   if (!raw) return null;
@@ -551,13 +556,15 @@ function search(q, divIdx){
   } else {
     const segs = raw.split(/[\/,&+]/).map(norm).filter(Boolean);
     if (!segs.length || segs.some(s => s.length < 2)) return 'short';
+    const hanQ = segs.some(s => HAN.test(s));
     for (const e of E){
       if (divIdx !== '' && e.w !== +divIdx) continue;
-      const h = matchEntry(e, segs);
+      const h = matchEntry(e, segs, false);
       if (h) out.push({e, h});
+      else if (hanQ){ const f = matchEntry(e, segs, true); if (f) out.push({e, h: f, f: true}); }
     }
   }
-  out.sort((a,b) => a.e.d - b.e.d || a.e.w - b.e.w || sortT(a.e).localeCompare(sortT(b.e)));
+  out.sort(byDiv);
   return out;
 }
 
@@ -579,10 +586,15 @@ function searchGym(q, divIdx, g){
   for (const e of E){
     if (!set.has(e.id) || (divIdx !== '' && e.w !== +divIdx)) continue;
     if (raw && /^\d{3,}$/.test(raw)){ if (!e.b.startsWith(raw)) continue; out.push({e, h: gymH(e, g)}); continue; }
-    if (segs.length){ if (!matchEntry(e, segs)) continue; }
+    if (segs.length){
+      if (!matchEntry(e, segs, false)){
+        if (segs.some(x => HAN.test(x)) && matchEntry(e, segs, true)) out.push({e, h: gymH(e, g), f: true});
+        continue;
+      }
+    }
     out.push({e, h: gymH(e, g)});
   }
-  out.sort((a,b) => a.e.d - b.e.d || a.e.w - b.e.w || sortT(a.e).localeCompare(sortT(b.e)));
+  out.sort(byDiv);
   return out;
 }
 
@@ -601,15 +613,19 @@ function renderResults(){
   if (r === 'short'){ box.innerHTML = '<p class="hint">두 글자 이상 입력해 주세요.</p>'; return; }
   if (!r.length){ box.innerHTML = '<p class="hint">검색 결과가 없습니다. 영문으로 등록한 분은 영문 철자로 찾아보세요.</p>'; return; }
   const inList = new Set(list.map(x => x.id));
-  const shown = r.slice(0, gymSel ? 300 : 30);
-  box.innerHTML = shown.map(({e, h}) => {
+  const main = r.filter(x => !x.f), cand = r.filter(x => x.f);
+  const row = ({e, h}) => {
     const di = divs[e.w], on = inList.has(e.id);
     return '<div class="res ' + di.cls + '"><div class="rwhen"><b>' + (e.tbd ? '–' : e.t) + '</b><span>' + DAYS[e.d].d + ' ' + DAYS[e.d].k + '</span></div>' +
       '<div class="info"><div class="names">' + namesHtml(e, gymSel ? h : null) + '</div>' +
       '<div class="meta"><span class="pill">' + esc(di.label) + '</span>' + (e.tbd ? '<span class="bib">시간 미정</span>' : '<span class="bib">배번 ' + esc(e.b) + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') + gymHtml(e) + '</div></div>' +
       '<button class="addbtn' + (on ? ' on' : '') + '" data-add="' + e.id + '"' + (on ? ' disabled' : '') + '>' + (on ? '추가됨' : '추가') + '</button></div>';
-  }).join('') + (r.length > shown.length ? '<p class="hint">결과 ' + r.length + '건 중 30건만 보여드려요. 이름을 더 입력해 좁혀 보세요.</p>' : '');
-  const pend = r.filter(({e}) => !inList.has(e.id));
+  };
+  const cap = gymSel ? 300 : 30, shown = main.slice(0, cap), cshown = cand.slice(0, 30);
+  box.innerHTML = shown.map(row).join('') + (main.length > shown.length ? '<p class="hint">결과 ' + main.length + '건 중 ' + cap + '건만 보여드려요. 이름을 더 입력해 좁혀 보세요.</p>' : '') +
+    (cand.length ? '<div class="candhead"><b>영문으로 등록한 분일 수 있어요</b><span>한글 이름을 로마자로 바꿔 비슷한 이름을 찾았어요. 이름이 맞는지 확인하고 추가하세요. (' + cand.length + '건' + (cand.length > cshown.length ? ', 30건만 표시' : '') + ')</span></div>' + cshown.map(row).join('') : '') +
+    '';
+  const pend = main.filter(({e}) => !inList.has(e.id));
   if (gymSel && pend.length){
     box.insertAdjacentHTML('afterbegin', '<button class="addall" id="addall" type="button">' + pend.length + '팀 모두 추가</button>');
     const ab = document.getElementById('addall');
