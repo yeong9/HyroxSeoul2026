@@ -171,6 +171,12 @@ h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-
 /* empty, manage, footer */
 .empty{margin-top:16px;padding:26px 18px;text-align:center;border:1.5px dashed var(--line);border-radius:18px;color:var(--mute)}
 .empty p{margin:0}
+.empty.first{border-color:var(--amber);background:var(--surface)}
+.empty .et{color:var(--ink);font-size:17px;font-weight:700}
+.empty .es{margin-top:6px;font-size:14px;line-height:1.5}
+.empty.first .slabbtn{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:12px 22px;font-size:15px}
+.fab.nudge{animation:nudge 1.8s ease-out infinite}
+@keyframes nudge{0%{box-shadow:0 8px 20px -8px rgba(0,0,0,.45),0 0 0 0 rgba(255,176,32,.65)}70%,100%{box-shadow:0 8px 20px -8px rgba(0,0,0,.45),0 0 0 16px rgba(255,176,32,0)}}
 .manage{margin-top:30px;display:grid;gap:8px}
 .row-btn{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-weight:500}
 .copybox{width:100%;min-height:150px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:10px;font:inherit}
@@ -206,6 +212,7 @@ footer p{margin:0 0 8px}
 .field input::-webkit-search-cancel-button,.field input::-webkit-search-decoration{-webkit-appearance:none;display:none}
 .gymchips{display:flex;gap:8px}
 .gymchips button{flex:0 0 auto;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600}
+.gymchips .cnt{margin-left:6px;font-weight:500;font-size:12.5px;opacity:.7}
 .gymchips button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .addall{align-self:flex-end;border:0;background:none;color:var(--ink);font-weight:600;font-size:13.5px;text-decoration:underline;text-underline-offset:3px;padding:4px 2px}
 .qclear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:0;border-radius:50%;background:var(--line);color:var(--ink);display:grid;place-items:center;padding:0}
@@ -226,7 +233,7 @@ footer p{margin:0 0 8px}
 .addbtn.on{background:var(--bg);color:var(--mute)}
 .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
 .toast.on{opacity:1}
-@media (prefers-reduced-motion:reduce){.panel{animation:none}.toast{transition:none}.chip.live i{animation:none}}
+@media (prefers-reduced-motion:reduce){.fab.nudge{animation:none}.panel{animation:none}.toast{transition:none}.chip.live i{animation:none}}
 
 </style>
 </head>
@@ -249,7 +256,7 @@ footer p{margin:0 0 8px}
     <button class="chipbtn js-reset" id="reset-top" type="button" data-act="clear" data-armed="한 번 더 누르면 초기화"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg><span class="lbl">목록 초기화</span></button>
   </div>
 
-  <p class="note">추가·삭제한 목록은 이 기기의 이 브라우저에만 저장돼요. 다른 기기나 브라우저에서는 기본 목록이 보이고, 브라우저 기록을 지우면 사라져요.</p>
+  <p class="note">추가·삭제한 목록은 이 기기의 이 브라우저에만 저장돼요. 다른 기기나 브라우저에서는 빈 목록으로 시작하고, 브라우저 기록을 지우면 사라져요.</p>
 
   <main id="board"></main>
 
@@ -290,9 +297,9 @@ footer p{margin:0 0 8px}
         <button class="qclear" id="qclear" type="button" aria-label="입력 지우기" hidden><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="gymchips" id="gymchips" role="group" aria-label="소속 필터">
-        <button type="button" data-g="" aria-pressed="true">전체</button>
-        <button type="button" data-g="X" aria-pressed="false">XON</button>
-        <button type="button" data-g="F" aria-pressed="false">F45범계</button>
+        <button type="button" data-g="" aria-pressed="true">전체<span class="cnt" id="cnt-all"></span></button>
+        <button type="button" data-g="X" aria-pressed="false">XON<span class="cnt" id="cnt-X"></span></button>
+        <button type="button" data-g="F" aria-pressed="false">F45범계<span class="cnt" id="cnt-F"></span></button>
       </div>
       <select id="qdiv" aria-label="디비전 필터"><option value="">전체 디비전</option></select>
     </div>
@@ -442,7 +449,7 @@ function load(){
       }
     }catch(e){}
   }
-  if (!s) s = {add: [], del: []};
+  if (!s) return [];   /* 처음 접속하면 빈 목록으로 시작 */
   const base = defs.filter(x => !s.del.includes(x.id));
   const extra = (s.add || []).filter(a => !base.some(x => x.id === a.id));
   return base.concat(extra);
@@ -818,8 +825,11 @@ function renderBoard(){
   all.forEach(({e}) => { const k = e.d + e.t; clashMap[k] = (clashMap[k] || 0) + 1; });
   const items = all.filter(({e}) => tab === 'all' || e.d === +tab);
   renderTabs(); renderNext(all, now);
+  document.getElementById('add').classList.toggle('nudge', !all.length);
   if (!items.length && (tab === 'all' || !awardRows(all, +tab).length)){
-    board.innerHTML = '<div class="empty"><p>' + (tab === 'all' ? '추가된 사람이 없어요.' : '이 날짜에 추가된 사람이 없어요.') + '</p><button class="slabbtn dark" data-open>이름으로 찾아 추가하기</button></div>';
+    board.innerHTML = all.length
+      ? '<div class="empty"><p>' + (tab === 'all' ? '추가된 사람이 없어요.' : '이 날짜에 추가된 사람이 없어요.') + '</p><button class="slabbtn dark" data-open>이름으로 찾아 추가하기</button></div>'
+      : '<div class="empty first"><p class="et">응원할 선수를 추가해 보세요</p><p class="es">위의 [사람 추가하기]나 오른쪽 아래 + 버튼으로<br>이름이나 배번을 찾아 담으면 출발 시간과<br>시상식이 한눈에 정리돼요.</p></div>';
     return;
   }
   const st = e => stOf(e, now);
@@ -984,6 +994,9 @@ document.getElementById('copy').onclick = async () => {
   divs.forEach((d,i) => { if (!seen.includes(d.label)) seen.push(d.label); });
   sel.innerHTML = '<option value="">전체 디비전</option>' + DATA.waves.map((w,i) => '<option value="' + i + '">' + esc(divs[i].label) + ' (' + esc(w.replace(/^HYROX /,'')) + ')</option>').join('');
   const dt = new Date(DATA.scraped);
+  document.getElementById('cnt-all').textContent = E.length.toLocaleString('ko-KR');
+  document.getElementById('cnt-X').textContent = XON_IDS.size.toLocaleString('ko-KR');
+  document.getElementById('cnt-F').textContent = F45_IDS.size.toLocaleString('ko-KR');
   document.getElementById('stamp').textContent = '출처 startlist.hyrox.com, 2026 Seoul 전체 ' + DATA.rows.length.toLocaleString('ko-KR') + '팀과 선수, ' + (dt.getMonth() + 1) + '월 ' + dt.getDate() + '일 수집';
   renderBoard();
   setInterval(renderBoard, 60000);
