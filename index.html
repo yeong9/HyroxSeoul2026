@@ -185,7 +185,7 @@ footer p{margin:0 0 8px}
 .sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center}
 .sheet[hidden]{display:none}
 .scrim{position:absolute;inset:0;background:rgba(6,14,24,.5)}
-.panel{position:relative;width:100%;max-width:640px;max-height:90dvh;max-height:90vh;display:flex;flex-direction:column;background:var(--bg);border-radius:26px 26px 0 0;padding:8px 16px calc(16px + env(safe-area-inset-bottom));animation:up .24s cubic-bezier(.2,.8,.2,1)}
+.panel{position:relative;width:100%;max-width:640px;max-height:90dvh;max-height:min(90vh,calc(var(--vvh,100vh) - 12px));display:flex;flex-direction:column;background:var(--bg);border-radius:26px 26px 0 0;padding:8px 16px calc(16px + env(safe-area-inset-bottom));animation:up .24s cubic-bezier(.2,.8,.2,1)}
 @keyframes up{from{transform:translateY(40px)}to{transform:none}}
 .grab{width:42px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 8px}
 .phead{display:flex;align-items:center;justify-content:space-between}
@@ -199,7 +199,8 @@ footer p{margin:0 0 8px}
 .sform select{width:100%;padding:11px 12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-size:14.5px}
 .note{margin:10px 2px 14px;padding:8px 12px;border-left:3px solid var(--line);color:var(--mute);font-size:12.5px;line-height:1.55}
 .hint{margin:10px 2px 0;color:var(--mute);font-size:13px;line-height:1.55}
-.results{margin-top:10px;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:8px;min-height:120px}
+.sheet.typing .hint{display:none}
+.results{margin-top:10px;flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:8px;min-height:96px}
 .res{--c:var(--o);display:grid;grid-template-columns:max-content 1fr auto;gap:14px;align-items:center;padding:10px 12px;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
 .rwhen b{display:block;font-family:var(--font-display);font-weight:800;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
 .rwhen span{font-size:12px;color:var(--mute)}
@@ -744,8 +745,22 @@ function summaryText(){
 
 /* 이벤트 */
 const sheet = document.getElementById('sheet');
+/* 모바일 키보드가 올라오면 보이는 영역에 맞춰 시트 크기와 위치를 조정해서 입력창이 가려지지 않게 함 */
+function fitSheet(){
+  const v = window.visualViewport;
+  if (!v){ return; }
+  sheet.style.top = v.offsetTop + 'px';
+  sheet.style.height = v.height + 'px';
+  sheet.style.bottom = 'auto';
+  sheet.style.setProperty('--vvh', v.height + 'px');
+}
+if (window.visualViewport){
+  window.visualViewport.addEventListener('resize', fitSheet);
+  window.visualViewport.addEventListener('scroll', fitSheet);
+}
 function openSheet(){
   sheet.hidden = false; document.body.classList.add('lock');
+  fitSheet();
   renderResults();
   setTimeout(() => document.getElementById('q').focus(), 60);
 }
@@ -757,7 +772,7 @@ document.getElementById('add').onclick = openSheet;
 sheet.querySelectorAll('[data-close]').forEach(b => b.onclick = closeSheet);
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !sheet.hidden) closeSheet(); });
 document.addEventListener('click', ev => { if (ev.target.closest('[data-open]')) openSheet(); });
-document.getElementById('q').addEventListener('input', renderResults);
+document.getElementById('q').addEventListener('input', () => { sheet.classList.toggle('typing', !!document.getElementById('q').value.trim()); renderResults(); });
 document.getElementById('qdiv').addEventListener('change', renderResults);
 document.getElementById('v-time').onclick = () => { view = 'time'; setView(); };
 document.getElementById('v-div').onclick = () => { view = 'div'; setView(); };
