@@ -165,6 +165,8 @@ h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-
 .fnow{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--ink);opacity:.7}
 .flegend{margin:8px 0 0;font-size:12px;color:var(--mute);display:flex;align-items:center;gap:6px}
 .flegend i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--amber);border:2px solid var(--ink)}
+.flegend i.tbd,.fdot.tbd{background:var(--surface);border:2px solid var(--ink)}
+.flegend i.tbd{margin-left:10px}
 
 /* empty, manage, footer */
 .empty{margin-top:16px;padding:26px 18px;text-align:center;border:1.5px dashed var(--line);border-radius:18px;color:var(--mute)}
@@ -751,12 +753,13 @@ function flowHtml(items, d, now){
   const rows = FLOW[d];
   if (!rows) return '';
   const ticks = [8,10,12,14,16,18,20].map(h => '<span style="left:' + pct(String(h).padStart(2,'0') + ':00') + '%">' + h + '시</span>').join('');
-  let html = '<div class="flow"><h3>하루 흐름</h3><p class="fsub">' + DAYS[d].d + '(' + DAYS[d].k + ') 디비전별 출발 시간대(오픈은 어댑티브 포함)</p><div class="fgrid">' +
+  let html = '<div class="flow"><h3>' + DAYS[d].d + '(' + DAYS[d].k + ')</h3><p class="fsub">디비전별 출발 시간대(오픈은 어댑티브 포함)</p><div class="fgrid">' +
     '<div></div><div class="fticks">' + ticks + '</div>';
   const k = new Date(now + 9 * 3600000);
   const nm = k.getUTCHours() * 60 + k.getUTCMinutes();
   const nowLine = (k.getUTCMonth() === 10 && k.getUTCDate() === 13 + d && nm >= AX0 && nm <= AX1)
     ? '<i class="fnow" title="지금" style="left:' + ((nm - AX0) / (AX1 - AX0) * 100).toFixed(2) + '%"></i>' : '';
+  let anyTbd = false;
   rows.forEach(r => {
     const mine = items.filter(({e}) => r.w.includes(DATA.waves[e.w]));
     const seen = {};
@@ -765,11 +768,14 @@ function flowHtml(items, d, now){
       const off = n === 1 ? 0 : (n % 2 ? -5 : 5) * Math.ceil((n - 1) / 2);
       return '<i class="fdot" style="left:' + pct(e.t) + '%;transform:translateY(' + off + 'px)" title="' + e.t + ' ' + esc(teamName(x, e)) + '"></i>';
     }).join('');
+    const tb = mine.filter(({e}) => e.tbd);
+    const tdots = tb.map(({x, e}, i) => '<i class="fdot tbd" style="left:' + (+pct(r.r[0]) + (pct(r.r[1]) - pct(r.r[0])) * (i + 1) / (tb.length + 1)).toFixed(2) + '%" title="시간 미정 ' + esc(teamName(x, e)) + '"></i>').join('');
+    anyTbd = anyTbd || tb.length > 0;
     const w = Math.max(0.5, pct(r.r[1]) - pct(r.r[0])).toFixed(2);
     html += '<div class="flabel' + (mine.length ? ' on' : '') + '"><b>' + esc(r.l) + '</b><small>' + r.r[0] + '–' + r.r[1] + '</small></div>' +
-      '<div class="ftrack"><i class="fbar ' + r.c + (mine.length ? ' on' : '') + '" style="left:' + pct(r.r[0]) + '%;width:' + w + '%"></i>' + nowLine + dots + '</div>';
+      '<div class="ftrack"><i class="fbar ' + r.c + (mine.length ? ' on' : '') + '" style="left:' + pct(r.r[0]) + '%;width:' + w + '%"></i>' + nowLine + dots + tdots + '</div>';
   });
-  return html + '</div><p class="flegend"><i></i>내 팀 출발 시각</p></div>';
+  return html + '</div><p class="flegend"><i></i>내 팀 출발 시각' + (anyTbd ? '<i class="tbd"></i>시간 미정(범위 안 어딘가)' : '') + '</p></div>';
 }
 const flap = t => t.split('').map(c => c === ':' ? '<span class="colon">:</span>' : '<span class="fl">' + c + '</span>').join('');
 function renderNext(all, now){
@@ -983,5 +989,6 @@ document.getElementById('copy').onclick = async () => {
   setInterval(renderBoard, 60000);
 })();
 </script>
+<script data-goatcounter="https://yeong9.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </body>
 </html>
