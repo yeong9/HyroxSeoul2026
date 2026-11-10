@@ -2,105 +2,136 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>HYROX 서울 시간표</title>
 <meta name="description" content="HYROX Seoul 2026 출발 시간과 시상 스케줄을 이름으로 찾아 한눈에 보는 시간표">
 <meta name="robots" content="noindex, nofollow">
 <meta property="og:title" content="HYROX 서울 시간표">
-<meta property="og:description" content="이름을 검색해 내 출발 시간과 시상 스케줄을 한눈에 확인하세요 (2026.11.13–15)">
+<meta property="og:description" content="이름을 검색해 내 출발 시간과 시상 스케줄을 한눈에 확인하세요 (2026.11.13-15)">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* Layout idea: one narrow column; sticky day tabs over a start-time ladder of cards, with a name search above. */
+/* Layout idea: left-aligned single column for phones. An amber LED start board up top, ticket-stub cards below, day tabs and an add button docked at the thumb. */
 :root{
-  --bg:#f2f4f7; --card:#ffffff; --ink:#151a22; --mute:#5c6675; --line:#dde2ea;
-  --accent:#e4432a; --accent-ink:#ffffff; --me:#fff1ec;
-  --w:#c2327a; --m:#2563c9; --x:#7c4dcc; --o:#44505f;
-  --font-display:'Barlow Condensed','Arial Narrow',sans-serif;
-  --font-body:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --bg:#e7ecef; --surface:#f8f9fa; --ink:#0f2236; --mute:#566879; --line:#d0d8de;
+  --slab:#0f2236; --slab-ink:#f2f5f8; --slab-mute:#9fb2c4;
+  --amber:#ffb51e; --amber-text:#7a4b00; --hl:rgba(255,181,30,.5);
+  --w:#c8286a; --m:#2551cf; --x:#7140c4; --o:#506070;
+  --font-display:'Big Shoulders Display','IBM Plex Sans KR','Apple SD Gothic Neo',sans-serif;
+  --font-body:'IBM Plex Sans KR','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',system-ui,sans-serif;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#0e1217; --card:#171d25; --ink:#eef1f5; --mute:#97a2b1; --line:#262e39;
-    --accent:#ff6a4d; --accent-ink:#1a0d09; --me:#2a1b18;
-    --w:#f070b0; --m:#6ea2ff; --x:#a98bff; --o:#9aa6b6; color-scheme:dark;
+    --bg:#08121c; --surface:#102030; --ink:#e8eef4; --mute:#93a4b4; --line:#213548;
+    --slab:#1a2f46; --amber:#ffc23d; --amber-text:#ffc23d; --hl:rgba(255,194,61,.3);
+    --w:#ff72a8; --m:#7a9fff; --x:#ab8fff; --o:#8fa1b3; color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0e1217; --card:#171d25; --ink:#eef1f5; --mute:#97a2b1; --line:#262e39;
-  --accent:#ff6a4d; --accent-ink:#1a0d09; --me:#2a1b18;
-  --w:#f070b0; --m:#6ea2ff; --x:#a98bff; --o:#9aa6b6; color-scheme:dark;
+  --bg:#08121c; --surface:#102030; --ink:#e8eef4; --mute:#93a4b4; --line:#213548;
+  --slab:#1a2f46; --amber:#ffc23d; --amber-text:#ffc23d; --hl:rgba(255,194,61,.3);
+  --w:#ff72a8; --m:#7a9fff; --x:#ab8fff; --o:#8fa1b3; color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%}
-.wrap{max-width:640px;margin:0 auto;padding:0 16px 56px}
-header{padding:28px 0 16px}
-h1{font-family:var(--font-display);font-weight:700;font-size:34px;letter-spacing:.01em;margin:0;line-height:1.1;text-wrap:balance}
-.credit{margin:6px 0 0;font-size:13px;color:var(--mute)}
-.credit a{color:var(--ink);font-weight:700;text-decoration:none;border-bottom:1px solid var(--accent)}
-.sub{color:var(--mute);margin:4px 0 0;font-size:14px}
+body{word-break:keep-all;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body.lock{overflow:hidden}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px calc(130px + env(safe-area-inset-bottom))}
 
-.search{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
-.search label{display:block;font-weight:700;margin-bottom:8px}
-.srow{display:flex;gap:8px}
-.srow input[type=search]{flex:1;min-width:0;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
-.srow select{max-width:44%;padding:11px 8px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
-.hint{color:var(--mute);font-size:13px;margin:8px 0 0}
-.results{margin-top:10px;display:flex;flex-direction:column;gap:8px}
-.res{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
-.res .info{min-width:0}
-.res .when{font-family:var(--font-display);font-weight:700;font-size:20px;line-height:1.1}
-.res .names{overflow-wrap:anywhere}
-.res .meta{color:var(--mute);font-size:12.5px}
-.btn{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-weight:500;white-space:nowrap}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
-.btn:disabled{opacity:.55;cursor:default}
-.more{color:var(--mute);font-size:13px;text-align:center;margin:2px 0 0}
+/* header */
+.top{padding:calc(22px + env(safe-area-inset-top)) 0 16px}
+h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-height:1.05;letter-spacing:.01em;text-wrap:balance}
+.where{margin:6px 0 0;display:flex;gap:4px 12px;flex-wrap:wrap;align-items:baseline;font-size:14px;color:var(--mute)}
+.where b{font-family:var(--font-display);font-weight:800;font-size:20px;color:var(--ink);letter-spacing:.01em}
+.by{margin:6px 0 0;font-size:13px;color:var(--mute);display:flex;gap:8px;flex-wrap:wrap}
+.by a{text-decoration:none;font-weight:600;color:var(--ink);border-bottom:1.5px solid var(--amber)}
 
-.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:14px 0 10px;margin-top:18px}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.tab{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 4px;text-align:center;line-height:1.25}
-.tab b{display:block;font-family:var(--font-display);font-size:19px;font-weight:700}
-.tab span{font-size:12px;color:var(--mute)}
-.tab[aria-selected=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.tab[aria-selected=true] span{color:var(--bg);opacity:.8}
-.tools{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
-.seg button{border:0;background:none;padding:6px 14px;font-size:13.5px}
-.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);font-weight:700}
-.acts{display:flex;gap:6px}
-.acts .btn{font-size:13px;padding:6px 12px}
+/* LED start board */
+.slab{background:var(--slab);color:var(--slab-ink);border-radius:24px;padding:16px 18px 18px;position:relative;overflow:hidden}
+.slab::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0 22px,rgba(255,255,255,.035) 22px 24px);pointer-events:none}
+.slab > *{position:relative}
+.stop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cd{font-weight:700;color:var(--amber);font-size:15px}
+.sday{margin-top:12px;font-weight:600;color:var(--slab-mute);font-size:14px}
+.flaps{margin-top:6px;display:flex;align-items:center;gap:6px;font-family:var(--font-display);font-weight:900;color:var(--amber);font-size:clamp(60px,21vw,92px);line-height:1;font-variant-numeric:tabular-nums}
+.fl{position:relative;display:inline-block;min-width:.56em;text-align:center;padding:.04em .08em 0;border-radius:.1em;background:rgba(255,255,255,.075)}
+.fl::after{content:"";position:absolute;left:0;right:0;top:54%;height:2px;background:rgba(0,0,0,.4)}
+.colon{display:inline-block;transform:translateY(-.06em);opacity:.9;padding:0 .02em}
+.wholist{margin-top:14px;display:flex;flex-direction:column;gap:3px}
+.wl{display:flex;gap:10px;align-items:baseline}
+.wl b{font-size:16px;font-weight:600}
+.wl span{color:var(--slab-mute);font-size:13.5px}
+.slab.calm{padding:20px 18px}
+.slab.calm .big{margin:0;font-size:20px;font-weight:700}
+.slab.calm .sm{margin:6px 0 0;color:var(--slab-mute);font-size:14px}
+.slabbtn{margin-top:14px;border:0;border-radius:999px;padding:10px 18px;font-weight:700;background:var(--amber);color:#2a1a00}
+.slabbtn.dark{background:var(--ink);color:var(--bg);margin-top:10px}
 
-.group{margin-top:18px}
-.ghead{display:flex;align-items:baseline;gap:10px;margin:0 0 8px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
-.ghead h2{margin:0;font-family:var(--font-display);font-size:26px;line-height:1;font-weight:700}
-.ghead small{color:var(--mute);font-size:13px}
-.ghead .tag{font-size:13px;font-weight:700}
-.card{position:relative;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--o);border-radius:12px;padding:12px 40px 12px 14px;margin-bottom:8px}
-.card.w{border-left-color:var(--w)} .card.m{border-left-color:var(--m)} .card.x{border-left-color:var(--x)}
-.top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.time{font-family:var(--font-display);font-weight:700;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
-.ampm{color:var(--mute);font-size:13px}
-.pill{font-size:12.5px;font-weight:700;border-radius:999px;padding:2px 10px;border:1px solid currentColor}
-.pill.w{color:var(--w)} .pill.m{color:var(--m)} .pill.x{color:var(--x)} .pill.o{color:var(--o)}
-.names{margin-top:6px;overflow-wrap:anywhere}
-.names .me{font-weight:700;background:var(--me);border-radius:5px;padding:0 5px}
-.names .sep{color:var(--mute)}
-.meta{margin-top:4px;color:var(--mute);font-size:13px;display:flex;gap:10px;flex-wrap:wrap}
-.clash{color:var(--accent);font-weight:700}
-.arow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;padding:10px 14px;border:1px dashed var(--accent);border-radius:12px;background:var(--card)}
-.arow .tag{font-size:12.5px;font-weight:700;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:2px 10px}
-.arow .at{font-family:var(--font-display);font-weight:700;font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
-.arow .who{flex-basis:100%;color:var(--mute);font-size:13px;overflow-wrap:anywhere}
-.flow{margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 12px 10px}
-.flow h3{margin:0 0 8px;font-size:14px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.flow h3 small{font-weight:400;color:var(--mute);font-size:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.chip.live{background:var(--amber);color:#2a1a00}
+.chip.live i{width:7px;height:7px;border-radius:50%;background:#2a1a00;animation:pulse 1.4s ease-in-out infinite}
+.chip.next{background:var(--ink);color:var(--bg)}
+.slab .chip.next{background:rgba(255,255,255,.14);color:var(--slab-ink)}
+.chip.done{background:var(--bg);color:var(--mute)}
+@keyframes pulse{50%{opacity:.25}}
+
+/* view bar */
+.viewbar{position:sticky;top:0;z-index:5;margin:14px -16px 0;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.seg{display:inline-flex;padding:3px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.seg button{border:0;background:none;border-radius:999px;padding:6px 16px;font-size:14px;font-weight:500;color:var(--mute)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);font-weight:600}
+.chipbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--mute);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:500;white-space:nowrap}
+.chipbtn.armed,.row-btn.armed{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+
+/* groups */
+.group{margin-top:6px}
+.ghead{display:flex;align-items:baseline;gap:10px;margin:20px 2px 10px}
+.ghead h2{margin:0;font-family:var(--font-display);font-weight:800;font-size:28px;line-height:1;letter-spacing:.01em}
+.ghead small{color:var(--mute);font-size:13px;white-space:nowrap}
+.rule{flex:1;height:1px;background:var(--line);transform:translateY(-4px)}
+.group.fin .ghead h2{color:var(--mute)}
+
+/* ticket card */
+.card{--c:var(--o);position:relative;display:grid;grid-template-columns:max-content 1fr;background:var(--surface);border:1px solid var(--line);border-radius:18px;margin-bottom:10px;overflow:hidden}
+.card.w,.res.w,.arow.w{--c:var(--w)} .card.m,.res.m,.arow.m{--c:var(--m)} .card.x,.res.x,.arow.x{--c:var(--x)}
+.stub{position:relative;display:flex;flex-direction:column;justify-content:center;padding:14px 16px 14px 16px;min-width:92px;border-right:2px dashed var(--line);background:var(--surface);background:color-mix(in srgb,var(--c) 11%,var(--surface))}
+.stub::before,.stub::after{content:"";position:absolute;right:-9px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:1px solid var(--line)}
+.stub::before{top:-9px} .stub::after{bottom:-9px}
+.time{font-family:var(--font-display);font-weight:800;font-size:44px;line-height:.95;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.ampm{margin-top:5px;font-size:12px;color:var(--mute)}
+.body{padding:12px 44px 12px 16px;min-width:0}
+.row1{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent);padding:2px 10px;border-radius:999px}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.names{margin-top:8px;font-size:17px;line-height:1.4;font-weight:500;overflow-wrap:anywhere}
+.names .me{font-weight:700;background:linear-gradient(transparent 58%,var(--hl) 58%);padding:0 2px;border-radius:2px}
+.names .sep{color:var(--mute);margin:0 6px;font-weight:400}
+.meta{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--mute)}
+.bib{background:var(--bg);color:var(--ink);font-weight:500;border-radius:7px;padding:1px 8px}
+.clash{color:var(--amber-text);font-weight:600}
+.card.done{opacity:.55}
+.x-btn{position:absolute;top:6px;right:6px;width:34px;height:34px;border:0;border-radius:50%;background:none;color:var(--mute);display:grid;place-items:center}
+.x-btn:active{background:var(--bg)}
+
+/* award */
+.arow{--c:var(--o);display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;padding:12px 14px;border-radius:18px;border:1.5px dashed var(--amber);background:var(--surface);background:color-mix(in srgb,var(--amber) 9%,var(--surface))}
+.arow .ico{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--amber);color:#2a1a00}
+.atop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.at{font-family:var(--font-display);font-weight:800;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
+.arow .who{margin-top:4px;color:var(--mute);font-size:13.5px;overflow-wrap:anywhere}
+.arow.done{opacity:.5}
+.abody{min-width:0}
+
+/* day flow chart */
+.flow{margin-top:6px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 14px 12px}
+.flow h3{margin:0;font-size:16px;font-weight:700}
+.fsub{margin:2px 0 10px;color:var(--mute);font-size:12.5px}
 .fgrid{display:grid;grid-template-columns:84px 1fr;row-gap:2px;align-items:center}
 .fticks{position:relative;height:16px;font-size:11px;color:var(--mute);font-variant-numeric:tabular-nums}
 .fticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
@@ -110,63 +141,124 @@ button{cursor:pointer}
 .flabel.on{color:var(--ink)} .flabel.on b{font-weight:700}
 .ftrack{position:relative;height:36px;background-image:linear-gradient(to right,var(--line) 1px,transparent 1px);background-size:calc(100% / 6.5) 100%}
 .fbar{position:absolute;top:12px;height:12px;border-radius:6px;min-width:6px;background:var(--o);opacity:.22}
-.fbar.on{opacity:.42}
+.fbar.on{opacity:.45}
 .fbar.w{background:var(--w)} .fbar.m{background:var(--m)} .fbar.x{background:var(--x)}
-.fdot{position:absolute;top:12px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--accent);border:2px solid var(--card)}
+.fdot{position:absolute;top:12px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--amber);border:2px solid var(--ink)}
+.fnow{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--ink);opacity:.7}
 .flegend{margin:8px 0 0;font-size:12px;color:var(--mute);display:flex;align-items:center;gap:6px}
-.flegend i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent)}
-.x-btn{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;border:0;background:none;color:var(--mute);font-size:18px;line-height:1}
-.x-btn:hover{background:var(--bg)}
-.empty{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:22px 16px;text-align:center;color:var(--mute);margin-top:18px}
-footer{margin-top:30px;color:var(--mute);font-size:12.5px;line-height:1.6}
-footer p{margin:0 0 6px}
-.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+.flegend i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--amber);border:2px solid var(--ink)}
+
+/* empty, manage, footer */
+.empty{margin-top:16px;padding:26px 18px;text-align:center;border:1.5px dashed var(--line);border-radius:18px;color:var(--mute)}
+.empty p{margin:0}
+.manage{margin-top:30px;display:grid;gap:8px}
+.row-btn{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-weight:500}
+.copybox{width:100%;min-height:150px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:10px;font:inherit}
+footer{margin-top:26px;color:var(--mute);font-size:12.5px;line-height:1.65}
+footer p{margin:0 0 8px}
+
+/* dock */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--bg);background:color-mix(in srgb,var(--bg) 84%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.dockin{max-width:640px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.days{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:20px}
+.tab{border:0;background:none;border-radius:16px;padding:6px 2px;text-align:center;line-height:1.2;color:var(--mute)}
+.tab b{display:block;font-size:16px;font-weight:700}
+.tab span{display:block;font-size:11px;font-variant-numeric:tabular-nums}
+.tab[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.fab{flex:none;width:54px;height:54px;border-radius:50%;border:0;background:var(--amber);color:#2a1a00;display:grid;place-items:center;box-shadow:0 8px 20px -8px rgba(0,0,0,.45)}
+.fab:active{transform:scale(.95)}
+
+/* add sheet */
+.sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet[hidden]{display:none}
+.scrim{position:absolute;inset:0;background:rgba(6,14,24,.5)}
+.panel{position:relative;width:100%;max-width:640px;max-height:90dvh;max-height:90vh;display:flex;flex-direction:column;background:var(--bg);border-radius:26px 26px 0 0;padding:8px 16px calc(16px + env(safe-area-inset-bottom));animation:up .24s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(40px)}to{transform:none}}
+.grab{width:42px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 8px}
+.phead{display:flex;align-items:center;justify-content:space-between}
+.phead h2{margin:0;font-size:20px;font-weight:700}
+.iconbtn{width:40px;height:40px;border:0;border-radius:50%;background:var(--surface);display:grid;place-items:center}
+.sform{margin-top:12px;display:grid;gap:8px}
+.field{position:relative}
+.field svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mute)}
+.field input{width:100%;padding:14px 14px 14px 44px;font-size:17px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface)}
+.field input:focus{outline:none;border-color:var(--ink)}
+.sform select{width:100%;padding:11px 12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-size:14.5px}
+.hint{margin:10px 2px 0;color:var(--mute);font-size:13px;line-height:1.55}
+.results{margin-top:10px;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:8px;min-height:120px}
+.res{--c:var(--o);display:grid;grid-template-columns:max-content 1fr auto;gap:14px;align-items:center;padding:10px 12px;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
+.rwhen b{display:block;font-family:var(--font-display);font-weight:800;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
+.rwhen span{font-size:12px;color:var(--mute)}
+.res .names{margin-top:0;font-size:16px}
+.res .meta{margin-top:6px}
+.addbtn{border:0;border-radius:999px;padding:9px 16px;font-weight:700;background:var(--ink);color:var(--bg)}
+.addbtn.on{background:var(--bg);color:var(--mute)}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
 .toast.on{opacity:1}
-.copybox{width:100%;margin-top:10px;min-height:140px;border-radius:10px;border:1px solid var(--line);background:var(--card);padding:10px;font:inherit}
-@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+@media (prefers-reduced-motion:reduce){.panel{animation:none}.toast{transition:none}.chip.live i{animation:none}}
+
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
+  <header class="top">
     <h1>HYROX 서울 시간표</h1>
-    <p class="sub">2026.11.13(금) – 11.15(일) · 이름을 검색해 내 목록에 추가하면 출발 시간이 정리됩니다</p>
-    <p class="credit">by <a href="https://www.instagram.com/yeong9_/" target="_blank" rel="noopener">yeong9</a> · <a href="https://www.instagram.com/yeong9_/" target="_blank" rel="noopener">instagram.com/yeong9_</a></p>
+    <p class="where"><b>2026.11.13–15</b><span>Korea International Exhibition Center</span></p>
+    <p class="by"><span>by <a href="https://www.instagram.com/yeong9_/" target="_blank" rel="noopener">yeong9</a></span><a href="https://www.instagram.com/yeong9_/" target="_blank" rel="noopener">instagram.com/yeong9_</a></p>
   </header>
 
-  <section class="search" aria-label="이름 검색">
-    <label for="q">선수 이름 검색</label>
-    <div class="srow">
-      <input id="q" type="search" placeholder="이름 또는 배번 (예: 장현주)" autocomplete="off">
-      <select id="qdiv" aria-label="디비전 필터"><option value="">전체 디비전</option></select>
-    </div>
-    <p class="hint">성·이름 순서와 띄어쓰기는 상관없어요. 더블은 두 사람 이름을 / 로 붙여 찾을 수 있습니다.</p>
-    <div class="results" id="results" aria-live="polite"></div>
-  </section>
+  <div id="next" aria-live="polite"></div>
 
-  <div class="bar">
-    <div class="tabs" id="tabs" role="tablist" aria-label="날짜"></div>
-    <div class="tools">
-      <div class="seg" role="group" aria-label="보기 방식">
-        <button id="v-time" aria-pressed="true">시간순</button>
-        <button id="v-div" aria-pressed="false">디비전별</button>
-      </div>
-      <div class="acts">
-        <button class="btn" id="copy">텍스트 복사</button>
-        <button class="btn" id="reset">기본 목록</button>
-      </div>
+  <div class="viewbar">
+    <div class="seg" role="group" aria-label="보기 방식">
+      <button id="v-time" aria-pressed="true">시간순</button>
+      <button id="v-div" aria-pressed="false">디비전별</button>
     </div>
+    <button class="chipbtn js-reset" id="reset-top" type="button" data-act="clear" data-armed="한 번 더 누르면 초기화"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg><span class="lbl">목록 초기화</span></button>
   </div>
 
-  <div id="board"></div>
-  <textarea id="copybox" class="copybox" hidden readonly aria-label="복사용 텍스트"></textarea>
+  <main id="board"></main>
+
+  <section class="manage" aria-label="내 목록 관리">
+    <button class="row-btn" id="copy"><span>지금 보는 화면을 텍스트로 복사</span></button>
+    <button class="row-btn js-reset" id="clear" type="button" data-act="clear" data-armed="한 번 더 누르면 모두 비워요"><span class="lbl">목록 초기화 (모두 비우기)</span></button>
+    <button class="row-btn js-reset" id="restore" type="button" data-act="restore" data-armed="한 번 더 누르면 기본 목록으로 바꿔요"><span class="lbl">기본 목록 다시 불러오기</span></button>
+    <textarea id="copybox" class="copybox" hidden readonly aria-label="복사용 텍스트"></textarea>
+  </section>
 
   <footer>
     <p id="stamp"></p>
-    <p>Made by yeong9 · <a href="https://www.instagram.com/yeong9_/" target="_blank" rel="noopener" style="color:inherit">instagram.com/yeong9_</a>. HYROX 공식 페이지가 아닌 개인 제작 도구입니다.</p>
-    <p>시상식 시간은 대회 공식 타임테이블 기준이며, 공지에 따라 바뀔 수 있습니다.</p>
-    <p>웨이브가 바뀌거나 등록이 추가되면 데이터를 다시 받아 갱신해야 합니다. 이 목록의 추가와 삭제는 이 기기의 브라우저에만 저장됩니다.</p>
+    <p>Made by yeong9, <a href="https://www.instagram.com/yeong9_/" target="_blank" rel="noopener">instagram.com/yeong9_</a>. HYROX 공식 페이지가 아닌 개인 제작 도구예요.</p>
+    <p>시상식 시간은 대회 공식 타임테이블 기준이고, 공지에 따라 바뀔 수 있어요. 경기 종료 표시는 출발 후 2시간이 지나면 붙는 추정이며, 한국 시간 기준으로 1분마다 갱신돼요.</p>
+    <p>웨이브가 바뀌거나 등록이 추가되면 데이터를 다시 받아 갱신해야 해요. 목록의 추가와 삭제는 이 기기의 브라우저에만 저장돼요.</p>
   </footer>
+</div>
+
+<nav class="dock" aria-label="날짜 선택">
+  <div class="dockin">
+    <div class="days" id="tabs" role="tablist" aria-label="날짜"></div>
+    <button class="fab" id="add" aria-label="사람 추가"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  </div>
+</nav>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="scrim" data-close></div>
+  <section class="panel" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+    <div class="grab"></div>
+    <div class="phead">
+      <h2 id="sheet-title">사람 추가</h2>
+      <button class="iconbtn" data-close aria-label="닫기"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="sform">
+      <div class="field">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input id="q" type="search" placeholder="이름이나 배번, 예) 이선영" autocomplete="off" aria-label="선수 이름 또는 배번">
+      </div>
+      <select id="qdiv" aria-label="디비전 필터"><option value="">전체 디비전</option></select>
+    </div>
+    <p class="hint">성과 이름 순서, 띄어쓰기는 상관없어요. 더블 파트너는 이름 두 개를 /로 이어 입력하면 한 번에 찾아요. 영문으로 등록한 분은 영문으로 검색하세요.</p>
+    <div class="results" id="results" aria-live="polite"></div>
+  </section>
 </div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -188,7 +280,13 @@ const DEFAULTS = [
   {d:2,b:'94044',l:'임안나',h:[0]},
   {d:2,b:'102025',l:'임화인',h:[1]},
   {d:2,b:'104002',l:'최수연/조재완',h:[0,1]},
-  {d:2,b:'114045',l:'서한나',h:[0]}
+  {d:2,b:'114045',l:'서한나',h:[0]},
+  {d:0,b:'115005',l:'진동규',h:[1]},
+  {d:1,b:'154007',l:'오승진/남채연',h:[0,1]},
+  {d:2,b:'84003',l:'남채연',h:[1]},
+  {d:2,b:'94045',l:'허민주',h:[0]},
+  {d:1,b:'195050',l:'장한별',h:[0]},
+  {d:1,b:'195059',l:'도유권',h:[0]}
 ];
 const STORE = 'hyrox-seoul-2026-list-v1';
 
@@ -234,12 +332,26 @@ function ampm(t){
   return (h < 12 ? '오전 ' : '오후 ') + ((h % 12) || 12) + ':' + String(m).padStart(2,'0');
 }
 
+/* 시각 계산: 대회는 한국 시간(UTC+9) 기준, 비교는 절대 시각으로 */
+const DUR = 120 * 60000;   /* 출발 후 2시간이 지나면 종료로 간주 */
+const AWDUR = 30 * 60000;  /* 시상식은 시작 후 30분 */
+const startMs = (d, t) => Date.UTC(2026, 10, 13 + d, +t.slice(0,2) - 9, +t.slice(3,5));
+const stOf = (e, now) => now < e.ms ? 'up' : (now < e.ms + DUR ? 'live' : 'done');
+function until(diff){
+  const m = Math.round(diff / 60000);
+  if (m < 1) return '곧';
+  const d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mi = m % 60;
+  if (d >= 1) return d + '일' + (h ? ' ' + h + '시간' : '') + ' 후';
+  if (h >= 1) return h + '시간' + (mi ? ' ' + mi + '분' : '') + ' 후';
+  return mi + '분 후';
+}
+
 /* 데이터 준비 */
 const divs = DATA.waves.map(divInfo);
 const E = DATA.rows.map(r => {
   const people = r[5];
   return {
-    id: r[0] + '-' + r[2], d: r[0], t: r[1], b: r[2], w: r[3], a: r[4], p: people,
+    id: r[0] + '-' + r[2], d: r[0], t: r[1], ms: startMs(r[0], r[1]), b: r[2], w: r[3], a: r[4], p: people,
     keys: people.map(p => {
       const tk = p.trim().toLowerCase().split(/\s+/);
       return [norm(tk.join('')), norm(tk.slice().reverse().join(''))];
@@ -249,21 +361,38 @@ const E = DATA.rows.map(r => {
 const byId = new Map(E.map(e => [e.id, e]));
 
 /* 상태 */
-let list, tab = 'all', view = 'time';
+let list, tab = '0', view = 'time';  /* 기본은 금요일, 대회 기간에는 오늘 요일 */
+const STORE2 = 'hyrox-seoul-2026-list-v2';
+const V1_IDS = ['0-152045','0-152040','0-154048','1-145043','1-154026','1-162036','2-83036','2-83005','2-85024','2-94044','2-102025','2-104002','2-114045'];
+const defItems = () => DEFAULTS.map(x => ({id: x.d + '-' + x.b, l: x.l, h: x.h}));
+/* 저장하는 것은 기본 목록과 다른 부분(추가한 팀, 뺀 기본 팀)뿐이라, 기본 목록이 늘어나도 모두에게 반영돼요 */
 function load(){
-  try{
-    const s = JSON.parse(localStorage.getItem(STORE) || 'null');
-    if (s && Array.isArray(s.list)) return s.list;
-  }catch(e){}
-  return DEFAULTS.map(x => ({id: x.d + '-' + x.b, l: x.l, h: x.h}));
+  const defs = defItems();
+  let s = null;
+  try{ s = JSON.parse(localStorage.getItem(STORE2) || 'null'); }catch(e){}
+  if (!s){
+    try{
+      const v1 = JSON.parse(localStorage.getItem(STORE) || 'null');
+      if (v1 && Array.isArray(v1.list)){
+        const have = new Set(v1.list.map(x => x.id));
+        s = {add: v1.list.filter(x => !V1_IDS.includes(x.id)), del: V1_IDS.filter(id => !have.has(id))};
+      }
+    }catch(e){}
+  }
+  if (!s) s = {add: [], del: []};
+  const base = defs.filter(x => !s.del.includes(x.id));
+  const extra = (s.add || []).filter(a => !base.some(x => x.id === a.id));
+  return base.concat(extra);
 }
 function save(){
-  try{ localStorage.setItem(STORE, JSON.stringify({list})); }catch(e){}
+  const defIds = defItems().map(x => x.id), have = new Set(list.map(x => x.id));
+  const s = {add: list.filter(x => !defIds.includes(x.id)), del: defIds.filter(id => !have.has(id))};
+  try{ localStorage.setItem(STORE2, JSON.stringify(s)); }catch(e){}
 }
 list = load().filter(x => byId.has(x.id));
 (function pickToday(){
-  const n = new Date(), m = n.getMonth() + 1, d = n.getDate();
-  if (m === 11 && d >= 13 && d <= 15) tab = String(d - 13);
+  const k = new Date(Date.now() + 9 * 3600000);
+  if (k.getUTCMonth() === 10 && k.getUTCDate() >= 13 && k.getUTCDate() <= 15) tab = String(k.getUTCDate() - 13);
 })();
 
 /* 검색 */
@@ -304,54 +433,56 @@ function namesHtml(e, h){
   return e.p.map((n,i) => {
     const s = esc(dispName(n));
     return h && h.includes(i) ? '<span class="me">' + s + '</span>' : '<span>' + s + '</span>';
-  }).join('<span class="sep"> · </span>');
+  }).join('<span class="sep">/</span>');
 }
 function renderResults(){
   const box = document.getElementById('results');
   const q = document.getElementById('q').value;
   const r = search(q, document.getElementById('qdiv').value);
-  if (r === null){ box.innerHTML = ''; return; }
+  if (r === null){ box.innerHTML = '<p class="hint">이름이나 배번을 입력하면 결과가 여기에 나옵니다.</p>'; return; }
   if (r === 'short'){ box.innerHTML = '<p class="hint">두 글자 이상 입력해 주세요.</p>'; return; }
-  if (!r.length){ box.innerHTML = '<p class="hint">검색 결과가 없습니다. 영문 표기나 철자를 바꿔 다시 찾아보세요.</p>'; return; }
+  if (!r.length){ box.innerHTML = '<p class="hint">검색 결과가 없습니다. 영문으로 등록한 분은 영문 철자로 찾아보세요.</p>'; return; }
   const inList = new Set(list.map(x => x.id));
   const shown = r.slice(0, 30);
   box.innerHTML = shown.map(({e}) => {
     const di = divs[e.w], on = inList.has(e.id);
-    return '<div class="res"><div class="info">' +
-      '<div class="when">' + DAYS[e.d].d + '(' + DAYS[e.d].k + ') ' + e.t + ' <span class="ampm">' + ampm(e.t) + '</span></div>' +
-      '<div class="names">' + namesHtml(e, null) + '</div>' +
-      '<div class="meta">' + esc(di.label) + ' · 배번 ' + esc(e.b) + (e.a ? ' · ' + esc(e.a) : '') + '</div></div>' +
-      '<button class="btn ' + (on ? '' : 'primary') + '" data-add="' + e.id + '"' + (on ? ' disabled' : '') + '>' + (on ? '추가됨' : '추가') + '</button></div>';
-  }).join('') + (r.length > shown.length ? '<p class="more">결과 ' + r.length + '건 중 30건만 표시합니다. 이름을 더 입력해 좁혀 보세요.</p>' : '');
+    return '<div class="res ' + di.cls + '"><div class="rwhen"><b>' + e.t + '</b><span>' + DAYS[e.d].d + ' ' + DAYS[e.d].k + '</span></div>' +
+      '<div class="info"><div class="names">' + namesHtml(e, null) + '</div>' +
+      '<div class="meta"><span class="pill">' + esc(di.label) + '</span><span class="bib">배번 ' + esc(e.b) + '</span>' + (e.a ? '<span>' + esc(e.a) + '</span>' : '') + '</div></div>' +
+      '<button class="addbtn' + (on ? ' on' : '') + '" data-add="' + e.id + '"' + (on ? ' disabled' : '') + '>' + (on ? '추가됨' : '추가') + '</button></div>';
+  }).join('') + (r.length > shown.length ? '<p class="hint">결과 ' + r.length + '건 중 30건만 보여드려요. 이름을 더 입력해 좁혀 보세요.</p>' : '');
   box.querySelectorAll('[data-add]').forEach(b => b.onclick = () => {
     const id = b.dataset.add;
     const item = r.find(x => x.e.id === id);
     list.push({id, l: '', h: item ? item.h : []});
     save(); renderResults(); renderBoard();
-    toast('목록에 추가했습니다');
+    toast('목록에 추가했어요');
   });
 }
 
 function sortedList(){
   return list.map(x => ({x, e: byId.get(x.id)})).sort((a,b) => a.e.d - b.e.d || a.e.t.localeCompare(b.e.t) || a.e.b.localeCompare(b.e.b));
 }
-function card(x, e, clash){
+function card(x, e, clash, st, isNext, now){
   const di = divs[e.w];
-  return '<article class="card ' + di.cls + '">' +
-    '<div class="top"><span class="time">' + e.t + '</span><span class="ampm">' + ampm(e.t) + '</span>' +
-    '<span class="pill ' + di.cls + '">' + esc(di.label) + '</span></div>' +
+  const chip = st === 'live' ? '<span class="chip live"><i></i>진행 중</span>'
+    : st === 'done' ? '<span class="chip done">종료</span>'
+    : isNext ? '<span class="chip next">다음</span>' : '';
+  return '<article class="card ' + di.cls + (st === 'done' ? ' done' : '') + '">' +
+    '<div class="stub"><b class="time">' + e.t + '</b><span class="ampm">' + ampm(e.t) + '</span></div>' +
+    '<div class="body"><div class="row1"><span class="pill">' + esc(di.label) + '</span>' + chip + '</div>' +
     '<div class="names">' + namesHtml(e, x.h) + '</div>' +
-    '<div class="meta"><span>배번 ' + esc(e.b) + '</span>' + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
-    (clash > 1 ? '<span class="clash">같은 시간 ' + clash + '팀 출발</span>' : '') + '</div>' +
-    '<button class="x-btn" data-del="' + e.id + '" aria-label="목록에서 삭제">×</button></article>';
+    '<div class="meta"><span class="bib">배번 ' + esc(e.b) + '</span>' + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
+    (clash > 1 && st !== 'done' ? '<span class="clash">같은 시간 ' + clash + '팀 출발</span>' : '') + '</div></div>' +
+    '<button class="x-btn" data-del="' + e.id + '" aria-label="목록에서 삭제"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></article>';
 }
 function renderTabs(){
   const cnt = [0,0,0];
   list.forEach(x => cnt[byId.get(x.id).d]++);
-  const tabs = [{id:'all', a:'전체', b: list.length + '팀'}].concat(DAYS.map((d,i) => ({id:String(i), a: d.k, b: d.d + ' · ' + cnt[i] + '팀'})));
+  const tabs = [{id:'all', a:'전체', b: list.length + '팀'}].concat(DAYS.map((d,i) => ({id:String(i), a: d.k, b: d.d + ' · ' + cnt[i]})));
   const el = document.getElementById('tabs');
   el.innerHTML = tabs.map(t => '<button class="tab" role="tab" data-tab="' + t.id + '" aria-selected="' + (tab === t.id) + '"><b>' + t.a + '</b><span>' + t.b + '</span></button>').join('');
-  el.querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.tab; renderTabs(); renderBoard(); });
+  el.querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.tab; renderBoard(); window.scrollTo({top: 0}); });
 }
 function teamName(x, e){
   if (x.l) return x.l;
@@ -365,16 +496,17 @@ function awardRows(items){
     const at = awardText(e);
     if (!at) return;
     const k = at + '|' + e.w;
-    if (!m.has(k)) m.set(k, {at, w: e.w, a: (AW[e.d] || {})[DATA.waves[e.w]], who: []});
+    if (!m.has(k)){ const a = (AW[e.d] || {})[DATA.waves[e.w]]; m.set(k, {at, w: e.w, a, ms: startMs(a[0], a[1]), who: []}); }
     m.get(k).who.push(teamName(x, e));
   });
   return [...m.values()].sort((p, q) => p.a[0] - q.a[0] || p.a[1].localeCompare(q.a[1]));
 }
-function awardHtml(r){
+const TROPHY = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/></svg>';
+function awardHtml(r, now){
   const di = divs[r.w];
-  return '<div class="arow"><span class="tag">시상식</span><span class="at">' + esc(r.at) + '</span>' +
-    '<span class="pill ' + di.cls + '">' + esc(di.label) + '</span>' +
-    '<span class="who">' + r.who.map(esc).join(', ') + '</span></div>';
+  return '<div class="arow ' + di.cls + (now > r.ms + AWDUR ? ' done' : '') + '"><span class="ico">' + TROPHY + '</span>' +
+    '<div class="abody"><div class="atop"><b class="at">' + esc(r.at) + '</b><span class="pill">' + esc(di.label) + ' 시상식</span></div>' +
+    '<div class="who">' + r.who.map(esc).join(', ') + '</div></div></div>';
 }
 
 /* 디비전별 출발 시간대: 공식 타임테이블 기준 */
@@ -404,12 +536,16 @@ function rangeOf(e){
   const row = (FLOW[e.d] || []).find(r => r.w.includes(DATA.waves[e.w]));
   return row ? row.r[0] + '–' + row.r[1] : '';
 }
-function flowHtml(items, d){
+function flowHtml(items, d, now){
   const rows = FLOW[d];
   if (!rows) return '';
   const ticks = [8,10,12,14,16,18,20].map(h => '<span style="left:' + pct(String(h).padStart(2,'0') + ':00') + '%">' + h + '시</span>').join('');
-  let html = '<div class="flow"><h3>하루 흐름 <small>' + DAYS[d].d + '(' + DAYS[d].k + ') 출발 시간대 · 오픈은 어댑티브 포함</small></h3><div class="fgrid">' +
+  let html = '<div class="flow"><h3>하루 흐름</h3><p class="fsub">' + DAYS[d].d + '(' + DAYS[d].k + ') 디비전별 출발 시간대(오픈은 어댑티브 포함)</p><div class="fgrid">' +
     '<div></div><div class="fticks">' + ticks + '</div>';
+  const k = new Date(now + 9 * 3600000);
+  const nm = k.getUTCHours() * 60 + k.getUTCMinutes();
+  const nowLine = (k.getUTCMonth() === 10 && k.getUTCDate() === 13 + d && nm >= AX0 && nm <= AX1)
+    ? '<i class="fnow" title="지금" style="left:' + ((nm - AX0) / (AX1 - AX0) * 100).toFixed(2) + '%"></i>' : '';
   rows.forEach(r => {
     const mine = items.filter(({e}) => r.w.includes(DATA.waves[e.w]));
     const seen = {};
@@ -420,57 +556,101 @@ function flowHtml(items, d){
     }).join('');
     const w = Math.max(0.5, pct(r.r[1]) - pct(r.r[0])).toFixed(2);
     html += '<div class="flabel' + (mine.length ? ' on' : '') + '"><b>' + esc(r.l) + '</b><small>' + r.r[0] + '–' + r.r[1] + '</small></div>' +
-      '<div class="ftrack"><i class="fbar ' + r.c + (mine.length ? ' on' : '') + '" style="left:' + pct(r.r[0]) + '%;width:' + w + '%"></i>' + dots + '</div>';
+      '<div class="ftrack"><i class="fbar ' + r.c + (mine.length ? ' on' : '') + '" style="left:' + pct(r.r[0]) + '%;width:' + w + '%"></i>' + nowLine + dots + '</div>';
   });
   return html + '</div><p class="flegend"><i></i>내 팀 출발 시각</p></div>';
 }
+const flap = t => t.split('').map(c => c === ':' ? '<span class="colon">:</span>' : '<span class="fl">' + c + '</span>').join('');
+function renderNext(all, now){
+  const el = document.getElementById('next');
+  if (!all.length){
+    el.innerHTML = '<div class="slab calm"><p class="big">아직 목록이 비어 있어요</p><button class="slabbtn" data-open>사람 추가하기</button></div>';
+    return;
+  }
+  const live = all.filter(({e}) => stOf(e, now) === 'live');
+  const up = all.filter(({e}) => stOf(e, now) === 'up');
+  if (!live.length && !up.length){
+    el.innerHTML = '<div class="slab calm"><p class="big">모든 경기가 끝났어요</p><p class="sm">수고하셨습니다. 시상식 일정은 아래에서 확인하세요.</p></div>';
+    return;
+  }
+  const isLive = live.length > 0;
+  const pool = isLive ? live : up.filter(({e}) => e.ms === up[0].e.ms);
+  const e0 = pool[0].e;
+  const cd = isLive ? '출발 ' + Math.max(1, Math.round((now - e0.ms) / 60000)) + '분 경과' : until(e0.ms - now);
+  const shownP = pool.slice(0, 3).map(({x, e}) => '<div class="wl"><b>' + esc(teamName(x, e)) + '</b><span>' + esc(divs[e.w].label) + '</span></div>').join('');
+  el.innerHTML = '<div class="slab"><div class="stop"><span class="chip ' + (isLive ? 'live' : 'next') + '">' + (isLive ? '<i></i>진행 중' : '다음 출발') + '</span>' +
+    '<span class="cd">' + cd + '</span></div>' +
+    '<div class="sday">' + DAYS[e0.d].d + '(' + DAYS[e0.d].k + ')</div>' +
+    '<div class="flaps" aria-label="' + e0.t + '">' + flap(e0.t) + '</div>' +
+    '<div class="wholist">' + shownP + (pool.length > 3 ? '<div class="wl"><span>외 ' + (pool.length - 3) + '팀</span></div>' : '') + '</div></div>';
+}
+function groupHtml(g, now){
+  return '<section class="group' + (g.fin ? ' fin' : '') + '"><div class="ghead"><h2>' + esc(g.head) + '</h2>' +
+    (g.sub ? '<small>' + esc(g.sub) + '</small>' : '') + '<i class="rule"></i><small>' + esc(g.count) + '</small></div>' +
+    g.cards.join('') + (g.awards || []).map(r => awardHtml(r, now)).join('') + '</section>';
+}
 function renderBoard(){
+  const now = Date.now();
   const board = document.getElementById('board');
   const all = sortedList();
   const clashMap = {};
   all.forEach(({e}) => { const k = e.d + e.t; clashMap[k] = (clashMap[k] || 0) + 1; });
   const items = all.filter(({e}) => tab === 'all' || e.d === +tab);
-  renderTabs();
+  renderTabs(); renderNext(all, now);
   if (!items.length){
-    board.innerHTML = '<div class="empty">이 날짜에 추가된 사람이 없습니다.<br>위 검색창에서 이름을 찾아 추가해 보세요.</div>';
+    board.innerHTML = '<div class="empty"><p>' + (tab === 'all' ? '추가된 사람이 없어요.' : '이 날짜에 추가된 사람이 없어요.') + '</p><button class="slabbtn dark" data-open>이름으로 찾아 추가하기</button></div>';
     return;
   }
+  const st = e => stOf(e, now);
+  const ups = all.filter(({e}) => st(e) === 'up').map(({e}) => e.ms);
+  const nextMs = ups.length ? Math.min(...ups) : -1;
+  const cardH = ({x, e}) => card(x, e, clashMap[e.d + e.t], st(e), e.ms === nextMs, now);
+  const awUp = rows => rows.filter(r => now <= r.ms + AWDUR);
   const groups = [];
-  const push = (key, head, sub, it) => {
-    let g = groups.find(g => g.key === key);
-    if (!g){ g = {key, head, sub, items: [], endAwards: false}; groups.push(g); }
-    g.items.push(it);
-  };
+  const dayHead = d => DAYS[d].d + '(' + DAYS[d].k + ')';
+
   if (view === 'time'){
-    items.forEach(it => {
-      const e = it.e;
-      if (tab === 'all') push('d' + e.d, DAYS[e.d].d + '(' + DAYS[e.d].k + ')', '', it);
-      else push(e.t, e.t, ampm(e.t), it);
-    });
-    if (tab === 'all') groups.forEach(g => g.endAwards = true);
+    const active = items.filter(({e}) => st(e) !== 'done');
+    const done = items.filter(({e}) => st(e) === 'done');
+    if (tab === 'all'){
+      [0,1,2].forEach(d => {
+        const ds = active.filter(({e}) => e.d === d);
+        const aw = awUp(awardRows(items.filter(({e}) => e.d === d)));
+        if (ds.length || aw.length) groups.push({head: dayHead(d), sub: '', count: ds.length + '팀', cards: ds.map(cardH), awards: aw});
+      });
+    } else {
+      const byT = new Map();
+      active.forEach(it => { if (!byT.has(it.e.t)) byT.set(it.e.t, []); byT.get(it.e.t).push(it); });
+      byT.forEach((arr, tm) => groups.push({head: tm, sub: ampm(tm), count: arr.length + '팀', cards: arr.map(cardH)}));
+      const aw = awUp(awardRows(items));
+      if (aw.length) groups.push({head: '시상식', sub: '', count: aw.length + '건', cards: [], awards: aw});
+    }
+    if (done.length) groups.push({head: '끝난 경기', sub: '', count: done.length + '팀', fin: true, cards: done.slice().reverse().map(cardH)});
   } else {
+    const gm = new Map();
     items.forEach(it => {
       const e = it.e, di = divs[e.w];
-      const rg = rangeOf(e) ? '출발 ' + rangeOf(e) : '';
-      push((tab === 'all' ? e.d : '') + di.label, di.label, (tab === 'all' ? DAYS[e.d].d + '(' + DAYS[e.d].k + ')' + (rg ? ' · ' : '') : '') + rg, it);
+      const k = (tab === 'all' ? e.d : '') + di.label;
+      if (!gm.has(k)){
+        const rg = rangeOf(e) ? '출발 ' + rangeOf(e) : '';
+        gm.set(k, {head: di.label, sub: (tab === 'all' ? dayHead(e.d) + (rg ? ' · ' : '') : '') + rg, items: []});
+      }
+      gm.get(k).items.push(it);
     });
-    groups.sort((a,b) => a.items[0].e.d - b.items[0].e.d || a.items[0].e.t.localeCompare(b.items[0].e.t));
-    groups.forEach(g => g.endAwards = true);
+    gm.forEach(g => {
+      const aw = awardRows(g.items);
+      const act = g.items.filter(({e}) => st(e) !== 'done').map(({e}) => e.ms).concat(awUp(aw).map(r => r.ms));
+      groups.push({head: g.head, sub: g.sub, count: g.items.length + '팀', cards: g.items.map(cardH), awards: aw,
+        fin: act.length === 0, key: act.length ? Math.min(...act) : g.items[0].e.ms});
+    });
+    groups.sort((a, b) => (a.fin - b.fin) || (a.key - b.key));
   }
-  let html = (tab !== 'all' ? flowHtml(items, +tab) : '') + groups.map(g => {
-    const rows = g.endAwards ? awardRows(g.items).map(awardHtml).join('') : '';
-    return '<section class="group"><div class="ghead"><h2>' + esc(g.head) + '</h2>' +
-      (g.sub ? '<small>' + esc(g.sub) + '</small>' : '') + '<small>' + g.items.length + '팀</small></div>' +
-      g.items.map(({x,e}) => card(x, e, clashMap[e.d + e.t])).join('') + rows + '</section>';
-  }).join('');
-  if (view === 'time' && tab !== 'all'){
-    const rows = awardRows(items);
-    if (rows.length) html += '<section class="group"><div class="ghead"><h2>시상식</h2><small>' + rows.length + '건</small></div>' + rows.map(awardHtml).join('') + '</section>';
-  }
-  board.innerHTML = html;
+  const flow = tab !== 'all' ? flowHtml(items, +tab, now) : '';
+  board.innerHTML = flow + groups.map(g => groupHtml(g, now)).join('');
   board.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
     list = list.filter(x => x.id !== b.dataset.del);
     save(); renderBoard(); renderResults();
+    toast('목록에서 뺐어요');
   });
 }
 
@@ -493,6 +673,20 @@ function summaryText(){
 }
 
 /* 이벤트 */
+const sheet = document.getElementById('sheet');
+function openSheet(){
+  sheet.hidden = false; document.body.classList.add('lock');
+  renderResults();
+  setTimeout(() => document.getElementById('q').focus(), 60);
+}
+function closeSheet(){
+  sheet.hidden = true; document.body.classList.remove('lock');
+  const f = document.getElementById('add'); if (f) f.focus();
+}
+document.getElementById('add').onclick = openSheet;
+sheet.querySelectorAll('[data-close]').forEach(b => b.onclick = closeSheet);
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !sheet.hidden) closeSheet(); });
+document.addEventListener('click', ev => { if (ev.target.closest('[data-open]')) openSheet(); });
 document.getElementById('q').addEventListener('input', renderResults);
 document.getElementById('qdiv').addEventListener('change', renderResults);
 document.getElementById('v-time').onclick = () => { view = 'time'; setView(); };
@@ -502,15 +696,28 @@ function setView(){
   document.getElementById('v-div').setAttribute('aria-pressed', view === 'div');
   renderBoard();
 }
-document.getElementById('reset').onclick = () => {
-  list = DEFAULTS.map(x => ({id: x.d + '-' + x.b, l: x.l, h: x.h}));
-  save(); renderBoard(); renderResults(); toast('기본 목록으로 되돌렸습니다');
-};
+/* 초기화와 기본 목록 복원은 실수로 누르기 쉬워서 두 번 눌러야 실행돼요 */
+document.querySelectorAll('.js-reset').forEach(btn => {
+  const lbl = btn.querySelector('.lbl'), orig = lbl.textContent;
+  let timer = null;
+  btn.onclick = () => {
+    if (!btn.classList.contains('armed')){
+      btn.classList.add('armed'); lbl.textContent = btn.dataset.armed;
+      timer = setTimeout(() => { btn.classList.remove('armed'); lbl.textContent = orig; }, 3000);
+      return;
+    }
+    clearTimeout(timer); btn.classList.remove('armed'); lbl.textContent = orig;
+    const clear = btn.dataset.act === 'clear';
+    list = clear ? [] : defItems();
+    save(); renderBoard(); renderResults();
+    toast(clear ? '목록을 비웠어요' : '기본 목록을 불러왔어요');
+  };
+});
 document.getElementById('copy').onclick = async () => {
   const txt = summaryText(), box = document.getElementById('copybox');
   try{
     await navigator.clipboard.writeText(txt);
-    box.hidden = true; toast('복사했습니다');
+    box.hidden = true; toast('복사했어요');
   }catch(e){
     box.value = txt; box.hidden = false; box.focus(); box.select();
     toast('아래 글을 길게 눌러 복사하세요');
@@ -524,8 +731,9 @@ document.getElementById('copy').onclick = async () => {
   divs.forEach((d,i) => { if (!seen.includes(d.label)) seen.push(d.label); });
   sel.innerHTML = '<option value="">전체 디비전</option>' + DATA.waves.map((w,i) => '<option value="' + i + '">' + esc(divs[i].label) + ' (' + esc(w.replace(/^HYROX /,'')) + ')</option>').join('');
   const dt = new Date(DATA.scraped);
-  document.getElementById('stamp').textContent = '출처: startlist.hyrox.com · 2026 Seoul 전체 ' + E.length.toLocaleString('ko-KR') + '팀/선수 · ' + (dt.getMonth() + 1) + '월 ' + dt.getDate() + '일 수집';
+  document.getElementById('stamp').textContent = '출처 startlist.hyrox.com, 2026 Seoul 전체 ' + E.length.toLocaleString('ko-KR') + '팀과 선수, ' + (dt.getMonth() + 1) + '월 ' + dt.getDate() + '일 수집';
   renderBoard();
+  setInterval(renderBoard, 60000);
 })();
 </script>
 </body>
