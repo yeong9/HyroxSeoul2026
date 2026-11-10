@@ -558,11 +558,13 @@ function teamName(x, e){
   return h.map(i => dispName(e.p[i])).join('/');
 }
 /* 시상식 행: 같은 요일·디비전의 팀을 묶어 한 줄로 */
-function awardRows(items){
+/* onDay를 주면 그 날 열리는 시상식만 (금요일 경기의 시상식이 토·일에 열리므로 시상식 날짜 기준으로 모음) */
+function awardRows(items, onDay){
   const m = new Map();
   items.forEach(({x, e}) => {
     const at = awardText(e);
     if (!at) return;
+    if (onDay !== undefined && (AW[e.d] || {})[DATA.waves[e.w]][0] !== onDay) return;
     const k = at + '|' + e.w;
     if (!m.has(k)){ const a = (AW[e.d] || {})[DATA.waves[e.w]]; m.set(k, {at, w: e.w, a, ms: startMs(a[0], a[1]), who: []}); }
     m.get(k).who.push(teamName(x, e));
@@ -665,7 +667,7 @@ function renderBoard(){
   all.forEach(({e}) => { const k = e.d + e.t; clashMap[k] = (clashMap[k] || 0) + 1; });
   const items = all.filter(({e}) => tab === 'all' || e.d === +tab);
   renderTabs(); renderNext(all, now);
-  if (!items.length){
+  if (!items.length && (tab === 'all' || !awardRows(all, +tab).length)){
     board.innerHTML = '<div class="empty"><p>' + (tab === 'all' ? '추가된 사람이 없어요.' : '이 날짜에 추가된 사람이 없어요.') + '</p><button class="slabbtn dark" data-open>이름으로 찾아 추가하기</button></div>';
     return;
   }
@@ -684,12 +686,12 @@ function renderBoard(){
     if (tab === 'all'){
       [0,1,2].forEach(d => {
         const ds = active.filter(({e}) => e.d === d);
-        const aw = awUp(awardRows(items.filter(({e}) => e.d === d)));
+        const aw = awUp(awardRows(all, d));
         if (ds.length || aw.length) groups.push({head: dayHead(d), sub: '', count: ds.length + '팀', cards: mergeT(ds), awards: aw});
       });
     } else {
       if (active.length) groups.push({head: dayHead(+tab), sub: '', count: active.length + '팀', cards: mergeT(active)});
-      const aw = awUp(awardRows(items));
+      const aw = awUp(awardRows(all, +tab));
       if (aw.length) groups.push({head: '시상식', sub: '', count: aw.length + '건', cards: [], awards: aw});
     }
     if (done.length) groups.push({head: '끝난 경기', sub: '', count: done.length + '팀', fin: true, cards: mergeT(done.slice().reverse())});
@@ -731,10 +733,11 @@ function summaryText(){
   const sel = sortedList().filter(({e}) => tab === 'all' || e.d === +tab);
   [0,1,2].forEach(d => {
     const day = sel.filter(({e}) => e.d === d);
-    if (!day.length) return;
+    const aw = awardRows(sortedList(), d);
+    if (!day.length && !aw.length) return;
     lines.push((lines.length ? '\n' : '') + DAYS[d].d + '(' + DAYS[d].k + ')');
     day.forEach(({x, e}) => lines.push(e.t + ' ' + teamName(x, e) + ' - ' + divs[e.w].label));
-    awardRows(day).forEach(r => lines.push('시상식 ' + r.at + ' - ' + divs[r.w].label));
+    aw.forEach(r => lines.push('시상식 ' + r.a[1] + ' - ' + divs[r.w].label + ' (' + r.who.join(', ') + ')'));
   });
   return 'HYROX 서울 출발 시간\n' + lines.join('\n');
 }
