@@ -37,7 +37,9 @@
 *{box-sizing:border-box}
 html,body{margin:0}
 body{word-break:keep-all;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
-body.lock{overflow:hidden}
+body.lock{overflow:hidden;position:fixed;left:0;right:0;width:100%}
+.sheet{overscroll-behavior:contain;touch-action:none}
+.panel,.results{touch-action:pan-y}
 button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 a{color:inherit}
@@ -195,6 +197,10 @@ footer p{margin:0 0 8px}
 .field{position:relative}
 .field svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--mute)}
 .field input{width:100%;padding:14px 14px 14px 44px;font-size:17px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface)}
+.field input{padding-right:44px}
+.field input::-webkit-search-cancel-button,.field input::-webkit-search-decoration{-webkit-appearance:none;display:none}
+.qclear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:0;border-radius:50%;background:var(--line);color:var(--ink);display:grid;place-items:center;padding:0}
+.qclear[hidden]{display:none}
 .field input:focus{outline:none;border-color:var(--ink)}
 .sform select{width:100%;padding:11px 12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-size:14.5px}
 .note{margin:10px 2px 14px;padding:8px 12px;border-left:3px solid var(--line);color:var(--mute);font-size:12.5px;line-height:1.55}
@@ -270,6 +276,7 @@ footer p{margin:0 0 8px}
       <div class="field">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
         <input id="q" type="search" placeholder="이름이나 배번, 예) 이선영" autocomplete="off" aria-label="선수 이름 또는 배번">
+        <button class="qclear" id="qclear" type="button" aria-label="입력 지우기" hidden><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <select id="qdiv" aria-label="디비전 필터"><option value="">전체 디비전</option></select>
     </div>
@@ -758,7 +765,10 @@ if (window.visualViewport){
   window.visualViewport.addEventListener('resize', fitSheet);
   window.visualViewport.addEventListener('scroll', fitSheet);
 }
+let lockY = 0;  /* 시트가 열려 있는 동안 뒤 화면 스크롤을 막고, 닫을 때 원래 위치로 복원 */
 function openSheet(){
+  lockY = window.scrollY;
+  document.body.style.top = -lockY + 'px';
   sheet.hidden = false; document.body.classList.add('lock');
   fitSheet();
   renderResults();
@@ -766,13 +776,22 @@ function openSheet(){
 }
 function closeSheet(){
   sheet.hidden = true; document.body.classList.remove('lock');
+  document.body.style.top = '';
+  window.scrollTo(0, lockY);
   const f = document.getElementById('add'); if (f) f.focus();
 }
 document.getElementById('add').onclick = openSheet;
 sheet.querySelectorAll('[data-close]').forEach(b => b.onclick = closeSheet);
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !sheet.hidden) closeSheet(); });
 document.addEventListener('click', ev => { if (ev.target.closest('[data-open]')) openSheet(); });
-document.getElementById('q').addEventListener('input', () => { sheet.classList.toggle('typing', !!document.getElementById('q').value.trim()); renderResults(); });
+function syncQ(){
+  const has = !!document.getElementById('q').value.trim();
+  sheet.classList.toggle('typing', has);
+  document.getElementById('qclear').hidden = !document.getElementById('q').value;
+  renderResults();
+}
+document.getElementById('q').addEventListener('input', syncQ);
+document.getElementById('qclear').onclick = () => { const q = document.getElementById('q'); q.value = ''; syncQ(); q.focus(); };
 document.getElementById('qdiv').addEventListener('change', renderResults);
 document.getElementById('v-time').onclick = () => { view = 'time'; setView(); };
 document.getElementById('v-div').onclick = () => { view = 'div'; setView(); };
