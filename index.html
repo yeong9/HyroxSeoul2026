@@ -18,7 +18,7 @@
   --bg:#e7ecef; --surface:#f8f9fa; --ink:#0f2236; --mute:#566879; --line:#d0d8de;
   --slab:#0f2236; --slab-ink:#f2f5f8; --slab-mute:#9fb2c4;
   --amber:#ffb51e; --amber-text:#7a4b00; --hl:rgba(255,181,30,.5);
-  --w:#c8286a; --m:#2551cf; --x:#7140c4; --o:#506070;
+  --gx:#111; --gf:#1b2a5c; --w:#c8286a; --m:#2551cf; --x:#7140c4; --o:#506070;
   --font-display:'Big Shoulders Display','IBM Plex Sans KR','Apple SD Gothic Neo',sans-serif;
   --font-body:'IBM Plex Sans KR','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',system-ui,sans-serif;
 }
@@ -26,13 +26,13 @@
   :root:not([data-theme="light"]){
     --bg:#08121c; --surface:#102030; --ink:#e8eef4; --mute:#93a4b4; --line:#213548;
     --slab:#1a2f46; --amber:#ffc23d; --amber-text:#ffc23d; --hl:rgba(255,194,61,.3);
-    --w:#ff72a8; --m:#7a9fff; --x:#ab8fff; --o:#8fa1b3; color-scheme:dark;
+    --gx:#f2f2f2; --gf:#8fa6ff; --w:#ff72a8; --m:#7a9fff; --x:#ab8fff; --o:#8fa1b3; color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#08121c; --surface:#102030; --ink:#e8eef4; --mute:#93a4b4; --line:#213548;
   --slab:#1a2f46; --amber:#ffc23d; --amber-text:#ffc23d; --hl:rgba(255,194,61,.3);
-  --w:#ff72a8; --m:#7a9fff; --x:#ab8fff; --o:#8fa1b3; color-scheme:dark;
+  --gx:#f2f2f2; --gf:#8fa6ff; --w:#ff72a8; --m:#7a9fff; --x:#ab8fff; --o:#8fa1b3; color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -108,6 +108,9 @@ h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-
 .body{padding:12px 44px 12px 16px;min-width:0}
 .row1{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent);padding:2px 10px;border-radius:999px}
+.gym{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--mute)}
+.gym::before{content:"";width:3px;height:11px;border-radius:2px;background:var(--gc)}
+.gym.gF{--gc:var(--gf)}.gym.gX{--gc:var(--gx)}
 .pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
 .names{margin-top:8px;font-size:17px;line-height:1.4;font-weight:500;overflow-wrap:anywhere}
 .names .me{font-weight:700;background:linear-gradient(transparent 58%,var(--hl) 58%);padding:0 2px;border-radius:2px}
@@ -184,6 +187,7 @@ footer p{margin:0 0 8px}
 .field input{width:100%;padding:14px 14px 14px 44px;font-size:17px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface)}
 .field input:focus{outline:none;border-color:var(--ink)}
 .sform select{width:100%;padding:11px 12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);font-size:14.5px}
+.note{margin:10px 2px 14px;padding:8px 12px;border-left:3px solid var(--line);color:var(--mute);font-size:12.5px;line-height:1.55}
 .hint{margin:10px 2px 0;color:var(--mute);font-size:13px;line-height:1.55}
 .results{margin-top:10px;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:8px;min-height:120px}
 .res{--c:var(--o);display:grid;grid-template-columns:max-content 1fr auto;gap:14px;align-items:center;padding:10px 12px;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
@@ -216,6 +220,8 @@ footer p{margin:0 0 8px}
     </div>
     <button class="chipbtn js-reset" id="reset-top" type="button" data-act="clear" data-armed="한 번 더 누르면 초기화"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg><span class="lbl">목록 초기화</span></button>
   </div>
+
+  <p class="note">추가·삭제한 목록은 이 기기의 이 브라우저에만 저장돼요. 다른 기기나 브라우저에서는 기본 목록이 보이고, 브라우저 기록을 지우면 사라져요.</p>
 
   <main id="board"></main>
 
@@ -256,7 +262,7 @@ footer p{margin:0 0 8px}
       </div>
       <select id="qdiv" aria-label="디비전 필터"><option value="">전체 디비전</option></select>
     </div>
-    <p class="hint">성과 이름 순서, 띄어쓰기는 상관없어요. 더블 파트너는 이름 두 개를 /로 이어 입력하면 한 번에 찾아요. 영문으로 등록한 분은 영문으로 검색하세요.</p>
+    <p class="hint">성과 이름 순서, 띄어쓰기는 상관없어요. 더블 파트너는 이름 두 개를 /로 이어 입력하면 한 번에 찾아요. 영문으로 등록한 분은 영문으로 검색하세요. 추가한 사람은 이 기기의 브라우저에만 저장돼요.</p>
     <div class="results" id="results" aria-live="polite"></div>
   </section>
 </div>
@@ -268,26 +274,33 @@ const DATA = {"event":"HYROX Seoul 2026","scraped":"2026-11-10T04:42:54.878Z","w
 const DAYS = [{k:'금',d:'11/13'},{k:'토',d:'11/14'},{k:'일',d:'11/15'}];
 /* 기본 지인 목록: 요일 번호, 배번, 부르는 이름, 강조할 선수 순번 */
 const DEFAULTS = [
-  {d:0,b:'152045',l:'장현주',h:[1]},
-  {d:0,b:'152040',l:'이정수/이혜인',h:[0,1]},
-  {d:0,b:'154048',l:'수연/나은',h:[0,1]},
-  {d:1,b:'145043',l:'장현주',h:[0]},
-  {d:1,b:'154026',l:'윤서영',h:[0]},
-  {d:1,b:'162036',l:'수연/소준',h:[0,1]},
-  {d:2,b:'83036',l:'김주영',h:[0]},
-  {d:2,b:'83005',l:'김윤경/이혜현',h:[0,1]},
-  {d:2,b:'85024',l:'수연/선영',h:[0,1]},
-  {d:2,b:'94044',l:'임안나',h:[0]},
-  {d:2,b:'102025',l:'임화인',h:[1]},
+  {d:0,b:'152045',l:'장현주',h:[1],g:'X'},
+  {d:0,b:'152040',l:'이정수/이혜인',h:[0,1],g:'X'},
+  {d:0,b:'154048',l:'수연/나은',h:[0,1],g:'X'},
+  {d:1,b:'145043',l:'장현주',h:[0],g:'X'},
+  {d:1,b:'154026',l:'윤서영',h:[0],g:'X'},
+  {d:1,b:'162036',l:'수연/소준',h:[0,1],g:'X'},
+  {d:2,b:'83036',l:'김주영',h:[0],g:'X'},
+  {d:2,b:'83005',l:'김윤경/이혜현',h:[0,1],g:'X'},
+  {d:2,b:'85024',l:'수연/선영',h:[0,1],g:'X'},
+  {d:2,b:'94044',l:'임안나',h:[0],g:'X'},
+  {d:2,b:'102025',l:'임화인',h:[1],g:'X'},
   {d:2,b:'104002',l:'최수연/조재완',h:[0,1]},
-  {d:2,b:'114045',l:'서한나',h:[0]},
-  {d:0,b:'115005',l:'진동규',h:[1]},
-  {d:1,b:'154007',l:'오승진/남채연',h:[0,1]},
-  {d:2,b:'84003',l:'남채연',h:[1]},
-  {d:2,b:'94045',l:'허민주',h:[0]},
-  {d:1,b:'195050',l:'장한별',h:[0]},
-  {d:1,b:'195059',l:'도유권',h:[0]}
+  {d:2,b:'114045',l:'서한나',h:[0],g:'X'},
+  {d:0,b:'115005',l:'진동규',h:[1],g:'F'},
+  {d:1,b:'154007',l:'오승진/남채연',h:[0,1],g:'F'},
+  {d:2,b:'84003',l:'남채연',h:[1],g:'F'},
+  {d:2,b:'94045',l:'허민주',h:[0],g:'F'},
+  {d:1,b:'195050',l:'장한별',h:[0],g:'X'},
+  {d:1,b:'195059',l:'도유권',h:[0],g:'X'}
 ];
+/* 소속 표기: XON은 기본 목록 카드만, F45범계는 명단(요일-배번)에 있는 카드만 표기해 동명이인을 구분 */
+const GYM = {F:'F45범계', X:'XON'};
+const F45_IDS = new Set(['0-85055','0-130004','0-141021','0-115005','0-152040','0-182049',
+  '1-110042','1-121016','1-172041','1-170051','1-162041','1-154007',
+  '2-85024','2-101022','2-95008','2-100037','2-94045','2-94041','2-84003',
+  '2-120021','2-90017','2-123004','2-144018','2-152042','2-190015']);
+const XON_IDS = new Set(DEFAULTS.filter(x => x.g === 'X').map(x => x.d + '-' + x.b));
 const STORE = 'hyrox-seoul-2026-list-v1';
 
 /* 시상 스케줄: 공식 타임테이블 기준. [요일 번호, 시각] */
@@ -463,6 +476,10 @@ function renderResults(){
 function sortedList(){
   return list.map(x => ({x, e: byId.get(x.id)})).sort((a,b) => a.e.d - b.e.d || a.e.t.localeCompare(b.e.t) || a.e.b.localeCompare(b.e.b));
 }
+function gymHtml(e){
+  return (XON_IDS.has(e.id) ? '<span class="gym gX">' + GYM.X + '</span>' : '') +
+    (F45_IDS.has(e.id) ? '<span class="gym gF">' + GYM.F + '</span>' : '');
+}
 function card(x, e, clash, st, isNext, now){
   const di = divs[e.w];
   const chip = st === 'live' ? '<span class="chip live"><i></i>진행 중</span>'
@@ -473,6 +490,7 @@ function card(x, e, clash, st, isNext, now){
     '<div class="body"><div class="row1"><span class="pill">' + esc(di.label) + '</span>' + chip + '</div>' +
     '<div class="names">' + namesHtml(e, x.h) + '</div>' +
     '<div class="meta"><span class="bib">배번 ' + esc(e.b) + '</span>' + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
+    gymHtml(e) +
     (clash > 1 && st !== 'done' ? '<span class="clash">같은 시간 ' + clash + '팀 출발</span>' : '') + '</div></div>' +
     '<button class="x-btn" data-del="' + e.id + '" aria-label="목록에서 삭제"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></article>';
 }
