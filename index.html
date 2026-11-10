@@ -105,9 +105,17 @@ h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-
 .stub::before{top:-9px} .stub::after{bottom:-9px}
 .time{font-family:var(--font-display);font-weight:800;font-size:44px;line-height:.95;letter-spacing:.01em;font-variant-numeric:tabular-nums}
 .ampm{margin-top:5px;font-size:12px;color:var(--mute)}
-.body{padding:12px 44px 12px 16px;min-width:0}
+.body{padding:12px 16px;min-width:0}
+.body .row1{padding-right:34px}
+.team{position:relative;min-width:0}
+.team.w{--c:var(--w)} .team.m{--c:var(--m)} .team.x{--c:var(--x)}
+.team+.team{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px}
+.team .x-btn{top:-6px;right:-10px}
+.team+.team .x-btn{top:6px}
+.cnt{margin-top:6px;align-self:flex-start;font-size:11.5px;font-weight:600;color:var(--mute);background:var(--bg);border-radius:999px;padding:1px 8px}
 .row1{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent);padding:2px 10px;border-radius:999px}
+.reslink{color:var(--mute);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
 .gyms{display:inline-flex;gap:10px;white-space:nowrap}
 .meta>span{white-space:nowrap}
 .gym{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--mute)}
@@ -294,7 +302,8 @@ const DEFAULTS = [
   {d:2,b:'84003',l:'남채연',h:[1],g:'F'},
   {d:2,b:'94045',l:'허민주',h:[0],g:'F'},
   {d:1,b:'195050',l:'장한별',h:[0],g:'X'},
-  {d:1,b:'195059',l:'도유권',h:[0],g:'X'}
+  {d:1,b:'195059',l:'도유권',h:[0],g:'X'},
+  {d:0,b:'160043',l:'송다해',h:[0],g:'X'}
 ];
 /* 소속 표기: XON은 기본 목록 카드만, F45범계는 명단(요일-배번)에 있는 카드만 표기해 동명이인을 구분 */
 const GYM = {F:'F45범계', X:'XON'};
@@ -478,24 +487,62 @@ function renderResults(){
 function sortedList(){
   return list.map(x => ({x, e: byId.get(x.id)})).sort((a,b) => a.e.d - b.e.d || a.e.t.localeCompare(b.e.t) || a.e.b.localeCompare(b.e.b));
 }
+/* 결과 사이트(results.hyrox.com) 연결. 서울 대회 이벤트 ID가 생기면 RESULTS.id에 요일별로 채우면 선수 검색 링크로 바뀝니다. */
+const RESULTS = {
+  show: false,   /* 결과가 올라오면 true로 바꾸면 '결과 보기' 링크가 나타납니다 */
+  url: 'https://results.hyrox.com/season-9/',
+  id: ['', '', '']   /* 금, 토, 일 이벤트 ID. 예: 'LR3MS4JI19CB' */
+};
+function resPrefix(w){
+  const u = w.toUpperCase();
+  if (/RELAY/.test(u)) return 'HMR';
+  if (/ADAPTIVE/.test(u)) return 'HA';
+  if (/DOUBLES/.test(u)) return /PRO/.test(u) ? 'HDP' : 'HD';
+  return /PRO/.test(u) ? 'HPRO' : 'H';
+}
+function resultUrl(x, e){
+  const id = RESULTS.id[e.d];
+  if (!id) return RESULTS.url + '?pid=leaderboard&pidp=current_nav';
+  const i = (x.h && x.h.length) ? x.h[0] : 0;
+  const t = e.p[i].trim().split(/\s+/);
+  const hangul = hasHangul(e.p[i]);
+  const last = hangul ? t[t.length - 1] : t[t.length - 1];
+  const first = t.slice(0, -1).join(' ');
+  return RESULTS.url + '?pid=list&pidp=ranking_nav&event=' + encodeURIComponent(resPrefix(DATA.waves[e.w]) + '_' + id) +
+    '&search%5Bname%5D=' + encodeURIComponent(last) + (first ? '&search%5Bfirstname%5D=' + encodeURIComponent(first) : '');
+}
 function gymHtml(e){
   const g = (XON_IDS.has(e.id) ? '<span class="gym gX">' + GYM.X + '</span>' : '') +
     (F45_IDS.has(e.id) ? '<span class="gym gF">' + GYM.F + '</span>' : '');
   return g ? '<span class="gyms">' + g + '</span>' : '';
 }
-function card(x, e, clash, st, isNext, now){
+function teamHtml(x, e, clash, st, isNext){
   const di = divs[e.w];
   const chip = st === 'live' ? '<span class="chip live"><i></i>진행 중</span>'
     : st === 'done' ? '<span class="chip done">종료</span>'
     : isNext ? '<span class="chip next">다음</span>' : '';
-  return '<article class="card ' + di.cls + (st === 'done' ? ' done' : '') + '">' +
-    '<div class="stub"><b class="time">' + e.t + '</b><span class="ampm">' + ampm(e.t) + '</span></div>' +
-    '<div class="body"><div class="row1"><span class="pill">' + esc(di.label) + '</span>' + chip + '</div>' +
+  return '<div class="team ' + di.cls + '">' +
+    '<div class="row1"><span class="pill">' + esc(di.label) + '</span>' + chip + '</div>' +
     '<div class="names">' + namesHtml(e, x.h) + '</div>' +
     '<div class="meta"><span class="bib">배번 ' + esc(e.b) + '</span>' + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
     gymHtml(e) +
-    (clash > 1 && st !== 'done' ? '<span class="clash">같은 시간 ' + clash + '팀 출발</span>' : '') + '</div></div>' +
-    '<button class="x-btn" data-del="' + e.id + '" aria-label="목록에서 삭제"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></article>';
+    (RESULTS.show ? '<a class="reslink" href="' + resultUrl(x, e) + '" target="_blank" rel="noopener">결과 보기</a>' : '') +
+    (clash > 1 && st !== 'done' ? '<span class="clash">같은 시간 ' + clash + '팀 출발</span>' : '') + '</div>' +
+    '<button class="x-btn" data-del="' + e.id + '" aria-label="목록에서 삭제"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
+}
+/* 같은 시간에 출발하는 팀은 한 장의 카드에 모아서 보여줍니다 */
+function card(arr, clash, st, nextMs){
+  const e0 = arr[0].e;
+  const cls = divs[e0.w].cls;
+  /* 디비전 색이 섞이면 팀 수만큼 스텁 배경을 위아래로 나눠 각 팀 색을 보여줌 */
+  const cs = arr.map(({e}) => 'var(--' + (divs[e.w].cls || 'o') + ')');
+  const mixed = new Set(cs).size > 1;
+  const bg = mixed ? ' style="background:linear-gradient(to bottom,' + cs.map((c, i) => 'color-mix(in srgb,' + c + ' 14%,var(--surface)) ' + (i * 100 / cs.length) + '% ' + ((i + 1) * 100 / cs.length) + '%').join(',') + ')"' : '';
+  const done = arr.every(({e}) => st(e) === 'done');
+  return '<article class="card ' + cls + (done ? ' done' : '') + '">' +
+    '<div class="stub"' + bg + '><b class="time">' + e0.t + '</b><span class="ampm">' + ampm(e0.t) + '</span>' +
+    (arr.length > 1 ? '<span class="cnt">' + arr.length + '팀</span>' : '') + '</div>' +
+    '<div class="body">' + arr.map(({x, e}) => teamHtml(x, e, clash, st(e), e.ms === nextMs)).join('') + '</div></article>';
 }
 function renderTabs(){
   const cnt = [0,0,0];
@@ -625,7 +672,8 @@ function renderBoard(){
   const st = e => stOf(e, now);
   const ups = all.filter(({e}) => st(e) === 'up').map(({e}) => e.ms);
   const nextMs = ups.length ? Math.min(...ups) : -1;
-  const cardH = ({x, e}) => card(x, e, clashMap[e.d + e.t], st(e), e.ms === nextMs, now);
+  const cardH = it => card([it], clashMap[it.e.d + it.e.t], st, nextMs);
+  const mergeT = arr => { const m = new Map(); arr.forEach(it => { if (!m.has(it.e.t)) m.set(it.e.t, []); m.get(it.e.t).push(it); }); return [...m.values()].map(g => card(g, 0, st, nextMs)); };
   const awUp = rows => rows.filter(r => now <= r.ms + AWDUR);
   const groups = [];
   const dayHead = d => DAYS[d].d + '(' + DAYS[d].k + ')';
@@ -637,16 +685,14 @@ function renderBoard(){
       [0,1,2].forEach(d => {
         const ds = active.filter(({e}) => e.d === d);
         const aw = awUp(awardRows(items.filter(({e}) => e.d === d)));
-        if (ds.length || aw.length) groups.push({head: dayHead(d), sub: '', count: ds.length + '팀', cards: ds.map(cardH), awards: aw});
+        if (ds.length || aw.length) groups.push({head: dayHead(d), sub: '', count: ds.length + '팀', cards: mergeT(ds), awards: aw});
       });
     } else {
-      const byT = new Map();
-      active.forEach(it => { if (!byT.has(it.e.t)) byT.set(it.e.t, []); byT.get(it.e.t).push(it); });
-      byT.forEach((arr, tm) => groups.push({head: tm, sub: ampm(tm), count: arr.length + '팀', cards: arr.map(cardH)}));
+      if (active.length) groups.push({head: dayHead(+tab), sub: '', count: active.length + '팀', cards: mergeT(active)});
       const aw = awUp(awardRows(items));
       if (aw.length) groups.push({head: '시상식', sub: '', count: aw.length + '건', cards: [], awards: aw});
     }
-    if (done.length) groups.push({head: '끝난 경기', sub: '', count: done.length + '팀', fin: true, cards: done.slice().reverse().map(cardH)});
+    if (done.length) groups.push({head: '끝난 경기', sub: '', count: done.length + '팀', fin: true, cards: mergeT(done.slice().reverse())});
   } else {
     const gm = new Map();
     items.forEach(it => {
