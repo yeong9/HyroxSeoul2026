@@ -98,12 +98,12 @@ h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-
 .group.fin .ghead h2{color:var(--mute)}
 
 /* ticket card */
-.card{--c:var(--o);position:relative;display:grid;grid-template-columns:max-content 1fr;background:var(--surface);border:1px solid var(--line);border-radius:18px;margin-bottom:10px;overflow:hidden}
+.card{--c:var(--o);position:relative;display:grid;grid-template-columns:124px 1fr;background:var(--surface);border:1px solid var(--line);border-radius:18px;margin-bottom:10px;overflow:hidden}
 .card.w,.res.w,.arow.w{--c:var(--w)} .card.m,.res.m,.arow.m{--c:var(--m)} .card.x,.res.x,.arow.x{--c:var(--x)}
-.stub{position:relative;display:flex;flex-direction:column;justify-content:center;padding:14px 16px 14px 16px;min-width:92px;border-right:2px dashed var(--line);background:var(--surface);background:color-mix(in srgb,var(--c) 11%,var(--surface))}
+.stub{position:relative;display:flex;flex-direction:column;justify-content:center;padding:14px 12px 14px 16px;min-width:0;border-right:2px dashed var(--line);background:var(--surface);background:color-mix(in srgb,var(--c) 11%,var(--surface))}
 .stub::before,.stub::after{content:"";position:absolute;right:-9px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:1px solid var(--line)}
 .stub::before{top:-9px} .stub::after{bottom:-9px}
-.time{font-family:var(--font-display);font-weight:800;font-size:44px;line-height:.95;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.time{white-space:nowrap;font-family:var(--font-display);font-weight:800;font-size:44px;line-height:.95;letter-spacing:.01em;font-variant-numeric:tabular-nums}
 .ampm{margin-top:5px;font-size:12px;color:var(--mute)}
 .body{padding:12px 16px;min-width:0}
 .body .row1{padding-right:34px}
