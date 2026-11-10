@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>HYROX 서울 시간표</title>
-<meta name="description" content="HYROX Seoul 2026 출발 시간과 시상 스케줄을 이름으로 찾아 한눈에 보는 시간표">
+<title>오늘 누구 응원하지? · HYROX Seoul 2026</title>
+<meta name="description" content="HYROX Seoul 2026 응원할 선수들의 출발 시간과 시상 스케줄을 한눈에 보는 시간표">
 <meta name="robots" content="noindex, nofollow">
-<meta property="og:title" content="HYROX 서울 시간표">
-<meta property="og:description" content="이름을 검색해 내 출발 시간과 시상 스케줄을 한눈에 확인하세요 (2026.11.13-15)">
+<meta property="og:title" content="오늘 누구 응원하지? · HYROX Seoul 2026">
+<meta property="og:description" content="응원할 선수 이름을 검색해 출발 시간과 시상 스케줄을 한눈에 확인하세요 (2026.11.13-15)">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -49,7 +49,8 @@ a{color:inherit}
 /* header */
 .top{padding:calc(22px + env(safe-area-inset-top)) 0 16px}
 h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-height:1.05;letter-spacing:.01em;text-wrap:balance}
-.where{margin:6px 0 0;display:flex;gap:4px 12px;flex-wrap:wrap;align-items:baseline;font-size:14px;color:var(--mute)}
+.sub{margin:6px 0 0;font-family:var(--font-display);font-weight:800;font-size:20px;letter-spacing:.04em;color:var(--mute)}
+.where{margin:4px 0 0;display:flex;gap:4px 12px;flex-wrap:wrap;align-items:baseline;font-size:14px;color:var(--mute)}
 .where b{font-family:var(--font-display);font-weight:800;font-size:20px;color:var(--ink);letter-spacing:.01em}
 .by{margin:6px 0 0;font-size:13px;color:var(--mute);display:flex;gap:8px;flex-wrap:wrap}
 .by a{text-decoration:none;font-weight:600;color:var(--ink);border-bottom:1.5px solid var(--amber)}
@@ -223,7 +224,8 @@ footer p{margin:0 0 8px}
 <body>
 <div class="wrap">
   <header class="top">
-    <h1>HYROX 서울 시간표</h1>
+    <h1>오늘 누구 응원하지?</h1>
+    <p class="sub">HYROX Seoul 2026</p>
     <p class="where"><b>2026.11.13–15</b><span>Korea International Exhibition Center</span></p>
     <p class="by"><span>by <a href="https://www.instagram.com/yeong9_/" target="_blank" rel="noopener">yeong9</a></span><a href="https://www.instagram.com/yeong9_/" target="_blank" rel="noopener">instagram.com/yeong9_</a></p>
   </header>
@@ -747,7 +749,7 @@ function summaryText(){
     day.forEach(({x, e}) => lines.push(e.t + ' ' + teamName(x, e) + ' - ' + divs[e.w].label));
     aw.forEach(r => lines.push('시상식 ' + r.a[1] + ' - ' + divs[r.w].label + ' (' + r.who.join(', ') + ')'));
   });
-  return 'HYROX 서울 출발 시간\n' + lines.join('\n');
+  return '오늘 누구 응원하지? · HYROX Seoul 2026\n' + lines.join('\n');
 }
 
 /* 이벤트 */
