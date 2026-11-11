@@ -55,6 +55,7 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html _site/
+          [ -d img ] && cp -r img _site/ || true
           if [ "${{ steps.gate.outputs.refresh }}" = "true" ] && python3 scripts/fetch_startlist.py index.html > startlist.json; then
             echo "새로 받았어요"
           else

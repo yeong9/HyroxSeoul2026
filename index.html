@@ -240,6 +240,33 @@ footer p{margin:0 0 8px}
 .rec b{font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
 .nowbtn{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;border:0;border-radius:999px;padding:10px 18px;background:var(--slab);color:var(--slab-ink);font-weight:700;font-size:14px;box-shadow:0 8px 20px -8px rgba(0,0,0,.5);white-space:nowrap}
 .nowbtn[hidden]{display:none}
+.slab.guide{padding:18px}
+.guide .gt{margin:12px 0 4px;font-size:18px;font-weight:700}
+.guide ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px}
+.guide li{font-size:14px;line-height:1.5;color:var(--slab-mute)}
+.guide li b{display:block;color:var(--amber);font-size:14px;margin-bottom:1px}
+.mapcard{display:flex;align-items:center;gap:12px;width:100%;margin:12px 0 0;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);text-align:left}
+.mapcard svg{flex:none;color:var(--ink)}
+.mapcard b{display:block;font-size:15px}
+.mapcard span{display:block;margin-top:1px;font-size:12.5px;color:var(--mute);line-height:1.4}
+.mapview{position:fixed;inset:0;z-index:70;background:#000;display:flex;flex-direction:column}
+.mapview[hidden]{display:none}
+.mapbar{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px calc(10px) 16px;color:#fff;font-weight:700;font-size:15px}
+.mapbar .zs{display:flex;gap:6px}
+.mapbar button{border:0;border-radius:999px;min-width:40px;height:40px;padding:0 14px;background:rgba(255,255,255,.16);color:#fff;font-weight:700;font-size:15px}
+.mapscroll{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.mapscroll img{display:block;width:100%;height:auto;max-width:none}
+.maphint{flex:none;margin:0;padding:8px 16px calc(10px + env(safe-area-inset-bottom));color:rgba(255,255,255,.7);font-size:12.5px;line-height:1.45}
+.mapfab{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;padding:0}
+.mapfab:active{transform:scale(.95)}
+.exs{display:grid;gap:8px;margin-top:10px}
+.exs .card{margin:0;pointer-events:none;color:var(--ink);grid-template-columns:96px 1fr}
+.exs .card.done{opacity:1}
+.exs .stub{padding:10px 8px 10px 14px}
+.exs .stub .time{font-size:26px}
+.exs .body .row1{padding-right:0}
+.exs .team{padding:10px 12px}
+.exn{margin:10px 0 0;font-size:12.5px;color:var(--slab-mute);line-height:1.45}
 .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){.fab.nudge{animation:none}.panel{animation:none}.toast{transition:none}.chip.live i{animation:none}}
@@ -256,6 +283,8 @@ footer p{margin:0 0 8px}
   </header>
 
   <div id="next" aria-live="polite"></div>
+
+  <button class="mapcard" id="mapopen" type="button"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4l-6 2v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg><div><b>경기장 지도</b><span>입구, 각 스테이션, 시상대, 화장실, 급수대 위치</span></div></button>
 
   <div class="viewbar">
     <div class="seg" role="group" aria-label="보기 방식">
@@ -288,9 +317,16 @@ footer p{margin:0 0 8px}
 <nav class="dock" aria-label="날짜 선택">
   <div class="dockin">
     <div class="days" id="tabs" role="tablist" aria-label="날짜"></div>
+    <button class="mapfab" id="mapopen2" type="button" aria-label="경기장 지도"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4l-6 2v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg></button>
     <button class="fab" id="add" aria-label="사람 추가"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
   </div>
 </nav>
+
+<div class="mapview" id="mapview" hidden role="dialog" aria-label="경기장 지도">
+  <div class="mapbar"><span>HYROX Seoul 경기장 지도</span><span class="zs"><button type="button" data-z="-1" aria-label="축소">−</button><button type="button" data-z="1" aria-label="확대">+</button><button type="button" data-close aria-label="닫기">닫기</button></span></div>
+  <div class="mapscroll" id="mapscroll"><img id="mapimg" alt="HYROX Seoul 경기장 지도: 러닝 코스, 8개 스테이션, 시상대, 입구·출구, 화장실, 급수대" decoding="async"></div>
+  <p class="maphint">+ 버튼이나 두 손가락으로 확대하고, 손가락으로 끌어서 움직여요. 폰을 가로로 돌리면 더 크게 보여요.</p>
+</div>
 
 <div class="sheet" id="sheet" hidden>
   <div class="scrim" data-close></div>
@@ -327,17 +363,15 @@ const DAYS = [{k:'금',d:'11/13'},{k:'토',d:'11/14'},{k:'일',d:'11/15'}];
 const DEFAULTS = [
   {d:0,b:'152045',l:'장현주',h:[1],g:'X'},
   {d:0,b:'152040',l:'이정수/이혜인',h:[0,1],g:'X'},
-  {d:0,b:'154048',l:'수연/나은',h:[0,1],g:'X'},
+  {d:0,b:'154048',l:'권수연/권나은',h:[0,1],g:'X'},
   {d:1,b:'145043',l:'장현주',h:[0],g:'X'},
   {d:1,b:'154026',l:'윤서영',h:[0],g:'X'},
   {d:1,b:'162036',l:'수연/소준',h:[0,1],g:'X'},
   {d:2,b:'83036',l:'김주영',h:[0],g:'X'},
   {d:2,b:'83005',l:'김윤경/이혜현',h:[0,1],g:'X'},
-  {d:2,b:'85024',l:'수연/선영',h:[0,1],g:'X'},
+  {d:2,b:'85024',l:'권수연/이선영',h:[0,1],g:'X'},
   {d:2,b:'94044',l:'임안나',h:[0],g:'X'},
   {d:2,b:'102025',l:'임화인',h:[1],g:'X'},
-  {d:2,b:'104002',l:'최수연/조재완',h:[0,1]},
-  {d:2,b:'114045',l:'서한나',h:[0],g:'X'},
   {d:0,b:'115005',l:'진동규',h:[1],g:'F'},
   {d:1,b:'154007',l:'오승진/남채연',h:[0,1],g:'F'},
   {d:2,b:'84003',l:'남채연',h:[1],g:'F'},
@@ -832,10 +866,27 @@ function flowHtml(items, d, now){
   return html + '</div><p class="flegend"><i></i>내 팀 출발 시각' + (anyTbd ? '<i class="tbd"></i>시간 미확인(범위 안 어딘가)' : '') + '</p></div>';
 }
 const flap = t => t.split('').map(c => c === ':' ? '<span class="colon">:</span>' : '<span class="fl">' + c + '</span>').join('');
+/* 대회 전 안내용 예시 카드 (진행 중 / 경과 / 종료+기록) */
+function guideEx(){
+  const di = divs[5], cls = di.cls || 'o';
+  const gyms = '<span class="gyms"><span class="gym gX">' + GYM.X + '</span><span class="gym gF">' + GYM.F + '</span></span>';
+  const one = (chip, extra, done) => '<article class="card ' + cls + (done ? ' done' : '') + '"><div class="stub"><b class="time">09:20</b></div><div class="body"><div class="team ' + cls + '">' +
+    '<div class="row1"><span class="pill">' + esc(di.label) + '</span>' + chip + '</div><div class="names"><span class="me">영구</span></div>' +
+    '<div class="meta">' + extra + gyms + '</div></div></div></article>';
+  return one('<span class="chip live"><i></i>진행 중</span>', '') +
+    one('<span class="chip done">종료</span>', '<span class="rec"><b>1:20:36</b>전체 99위</span><span class="reslink ok">결과 확인</span>', true);
+}
 function renderNext(all, now){
   const el = document.getElementById('next');
   if (!all.length){
     el.innerHTML = '<div class="slab calm"><p class="big">아직 목록이 비어 있어요</p><button class="slabbtn" data-open>사람 추가하기</button></div>';
+    return;
+  }
+  /* 대회 전(11/13 08:00 이전)에는 경기가 없으니, 경기 시작 후 화면이 어떻게 바뀌는지 안내 */
+  if (now < startMs(0, '08:00')){
+    const first = all.filter(({e}) => !e.tbd)[0];
+    el.innerHTML = '<div class="slab guide"><div class="stop"><span class="chip next">대회 전</span>' + (first ? '<span class="cd">내 첫 경기 ' + until(first.e.ms - now) + '</span>' : '') + '</div>' +
+      '<p class="gt">경기가 시작되면 카드가 이렇게 바뀌어요</p><div class="exs">' + guideEx() + '</div><p class="exn">예시 화면이에요. 결과가 올라오면 반영까지 5~10분 걸릴 수 있어요.</p></div>';
     return;
   }
   const live = all.filter(({e}) => stOf(e, now) === 'live');
@@ -1040,6 +1091,22 @@ document.getElementById('copy').onclick = async () => {
   }
 };
 
+/* 경기장 지도: 처음 열 때만 이미지를 불러온다 */
+(function(){
+  const mv = document.getElementById('mapview'), im = document.getElementById('mapimg'), sc = document.getElementById('mapscroll');
+  const Z = [100, 170, 260, 400]; let zi = 0;
+  const apply = () => { const cx = (sc.scrollLeft + sc.clientWidth / 2) / (sc.scrollWidth || 1), cy = (sc.scrollTop + sc.clientHeight / 2) / (sc.scrollHeight || 1);
+    im.style.width = Z[zi] + '%'; sc.scrollLeft = cx * sc.scrollWidth - sc.clientWidth / 2; sc.scrollTop = cy * sc.scrollHeight - sc.clientHeight / 2; };
+  const open = () => { if (!im.getAttribute('src')) im.src = 'img/hyroxseoulmap.webp'; mv.hidden = false; document.body.style.overflow = 'hidden'; zi = 0; im.style.width = '100%'; };
+  const close = () => { mv.hidden = true; document.body.style.overflow = ''; };
+  document.getElementById('mapopen').onclick = open;
+  document.getElementById('mapopen2').onclick = open;
+  mv.querySelector('[data-close]').onclick = close;
+  mv.querySelectorAll('[data-z]').forEach(b => b.onclick = () => { zi = Math.max(0, Math.min(Z.length - 1, zi + +b.dataset.z)); apply(); });
+  im.ondblclick = () => { zi = zi >= Z.length - 1 ? 0 : zi + 1; apply(); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !mv.hidden) close(); });
+})();
+
 /* 스타트리스트가 갱신돼 XON 명단의 임시 팀이 실제 팀으로 나타나면, 임시 팀을 실제 팀으로 바꿔 끼운다 (같은 날·같은 디비전, 이름이 모두 맞고 후보가 하나일 때만) */
 const REPL = {};
 (function resolvePH(){
@@ -1077,6 +1144,7 @@ const REPL = {};
 /* '지금 경기' 버튼: 진행 중(없으면 다음) 경기 카드가 화면 밖이면 나타나서 눌러 바로 이동 */
 function updateNow(){
   const btn = document.getElementById('nowbtn'); if (!btn) return;
+  if (Date.now() < startMs(0, '08:00')){ btn.hidden = true; return; }
   const pick = c => { const t = document.querySelector('#board .chip.' + c); return t ? t.closest('.card') : null; };
   const live = pick('live') || pick('over'), card = live || pick('next');
   if (!card){ btn.hidden = true; return; }
