@@ -1,0 +1,59 @@
+name: Pages (실시간 결과 반영)
+
+# main 에 푸시하거나, 대회 기간(11/13~11/15)에 5분마다 돌면서
+# results.hyrox.com 에 결과가 올라온 팀을 finished.json 으로 만들어 사이트와 함께 배포합니다.
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 실행 여부 확인 (예약 실행은 대회 기간에만)
+        id: gate
+        run: |
+          now=$(date -u +%s)
+          start=$(date -u -d '2026-11-12 23:00' +%s)   # 11/13 08:00 KST
+          end=$(date -u -d '2026-11-15 14:00' +%s)     # 11/15 23:00 KST
+          if [ "${{ github.event_name }}" = "schedule" ] && { [ "$now" -lt "$start" ] || [ "$now" -gt "$end" ]; }; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'true'
+
+      - name: 결과 확인
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          python3 scripts/fetch_results.py index.html > _site/finished.json || echo '{"done":[]}' > _site/finished.json
+          cat _site/finished.json
+
+      - uses: actions/configure-pages@v5
+        if: steps.gate.outputs.run == 'true'
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.gate.outputs.run == 'true'
+        with:
+          path: _site
+      - id: deployment
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/deploy-pages@v4

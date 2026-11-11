@@ -81,6 +81,7 @@ h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-
 .chip.live i{width:7px;height:7px;border-radius:50%;background:#2a1a00;animation:pulse 1.4s ease-in-out infinite}
 .chip.next{background:var(--ink);color:var(--bg)}
 .slab .chip.next{background:rgba(255,255,255,.14);color:var(--slab-ink)}
+.chip.over{background:color-mix(in srgb,var(--amber) 22%,var(--bg));color:var(--ink)}
 .chip.done{background:var(--bg);color:var(--mute)}
 @keyframes pulse{50%{opacity:.25}}
 
@@ -266,14 +267,14 @@ footer p{margin:0 0 8px}
   <section class="manage" aria-label="내 목록 관리">
     <button class="row-btn" id="copy"><span>지금 보는 화면을 텍스트로 복사</span></button>
     <button class="row-btn js-reset" id="clear" type="button" data-act="clear" data-armed="한 번 더 누르면 모두 비워요"><span class="lbl">목록 초기화 (모두 비우기)</span></button>
-    <button class="row-btn js-reset" id="restore" type="button" data-act="restore" data-armed="한 번 더 누르면 기본 목록으로 바꿔요"><span class="lbl">기본 목록 다시 불러오기</span></button>
+    <button class="row-btn js-reset" id="restore" type="button" data-act="restore" data-armed="한 번 더 누르면 샘플 목록으로 바꿔요"><span class="lbl">샘플 목록 불러오기</span></button>
     <textarea id="copybox" class="copybox" hidden readonly aria-label="복사용 텍스트"></textarea>
   </section>
 
   <footer>
     <p id="stamp"></p>
     <p>Made by yeong9, <a href="https://www.instagram.com/yeong9_/" target="_blank" rel="noopener">instagram.com/yeong9_</a>. HYROX 공식 페이지가 아닌 개인 제작 도구예요.</p>
-    <p>시상식 시간은 대회 공식 타임테이블 기준이고, 공지에 따라 바뀔 수 있어요. 경기 종료 표시는 출발 후 2시간이 지나면 붙는 추정이며, 한국 시간 기준으로 1분마다 갱신돼요.</p>
+    <p>시상식 시간은 대회 공식 타임테이블 기준이고, 공지에 따라 바뀔 수 있어요. 경기 상태는 출발 시각 기준 추정이고, 결과 사이트에 결과가 올라온 경기는 바로 종료로 바뀌어요(5분 안팎 지연). 출발 후 1시간까지 '진행 중', 1시간부터 1시간 30분까지 경과 시간, 1시간 30분이 지나면 '종료'로 표시하고,, 한국 시간 기준으로 1분마다 갱신돼요.</p>
     <p>웨이브가 바뀌거나 등록이 추가되면 데이터를 다시 받아 갱신해야 해요. 목록의 추가와 삭제는 이 기기의 브라우저에만 저장돼요.</p>
   </footer>
 </div>
@@ -337,17 +338,23 @@ const DEFAULTS = [
   {d:2,b:'94045',l:'허민주',h:[0],g:'F'},
   {d:1,b:'195050',l:'장한별',h:[0],g:'X'},
   {d:1,b:'195059',l:'도유권',h:[0],g:'X'},
-  {d:0,b:'160043',l:'송다해',h:[0],g:'X'}
+  {d:0,b:'160043',l:'송다해',h:[0],g:'X'},
+  {d:0,b:'92043',l:'김건우',h:[0],g:'X'},
+  {d:2,b:'172044',l:'김건우/권도영',h:[0,1],g:'X'},
+  {id:'p0-10',l:'최혜윤/장한별',h:[0,1],g:'X'},
+  {d:0,b:'121011',l:'정원준/황재균',h:[0],g:'X'},
+  {d:2,b:'182038',l:'정원준 릴레이',h:[1],g:'X'}
 ];
-/* 소속 표기: XON은 기본 목록 카드만, F45범계는 명단(요일-배번)에 있는 카드만 표기해 동명이인을 구분 */
+const defId = x => x.id || x.d + '-' + x.b;
+/* 소속 표기: XON은 샘플 목록 카드만, F45범계는 명단(요일-배번)에 있는 카드만 표기해 동명이인을 구분 */
 const GYM = {F:'F45범계', X:'XON'};
-const F45_IDS = new Set(['0-85055','0-130004','0-141021','0-115005','0-152040','0-182049',
+const F45_IDS = new Set(['1-153022','0-85055','0-130004','0-141021','0-115005','0-152040','0-182049',
   '1-110042','1-121016','1-172041','1-170051','1-162041','1-154007',
   '2-85024','2-101022','2-95008','2-100037','2-94045','2-94041','2-84003',
   '2-120021','2-90017','2-123004','2-144018','2-152042','2-190015']);
 /* XON 출전 명단(요일-배번 → 명단에 있는 선수 순번). 공유받은 요일·디비전별 출전 명단 이미지 기준. 영문 등록 이름은 발음 유사도로 연결했고, 동명이인으로 구분이 안 되는 경우는 뺐어요 */
 const XON_H = {"0-90016":[0],"0-100033":[0],"0-91017":[0],"0-110003":[0],"0-83020":[0],"0-90038":[0],"0-102054":[0],"0-90019":[0],"0-92043":[0],"0-90030":[0],"0-164010":[0],"0-171053":[0],"0-164030":[0],"0-164012":[0],"0-164039":[0],"0-170059":[0],"0-164051":[0],"0-164027":[0],"0-165026":[0],"0-165012":[0],"0-171044":[0],"0-121018":[0,1],"0-144025":[0,1],"0-121023":[0,1],"0-130025":[0,1],"0-123028":[0],"0-122048":[0,1],"0-140005":[0,1],"0-144020":[0,1],"0-160028":[0,1],"0-153001":[0,1],"0-155020":[0,1],"0-153050":[0,1],"0-161002":[1],"0-153025":[0,1],"0-152037":[0,1],"0-152045":[0,1],"0-154048":[0,1],"0-154010":[0,1],"0-152025":[0,1],"0-152040":[0,1],"0-152024":[0,1],"0-183014":[0,1],"0-175018":[0,1],"0-192001":[1],"0-185039":[0,1],"0-192050":[0,1],"0-183049":[0,1],"0-175001":[0,1],"0-181030":[0,1],"1-110022":[0],"1-95038":[0],"1-121052":[0],"1-90028":[0],"1-94017":[0],"1-92020":[0],"1-102047":[0],"1-85026":[0],"1-121028":[0],"1-84055":[0],"1-111013":[0],"1-90021":[0],"1-123052":[0],"1-115059":[0],"1-94026":[0],"1-93044":[0],"1-100015":[0],"1-103029":[0],"1-112020":[0],"1-84044":[0],"1-94047":[0],"1-103037":[0],"1-84021":[0],"1-95023":[0],"1-83008":[0],"1-91007":[0],"1-95014":[0],"1-112015":[0],"1-94058":[0],"1-100012":[0],"1-195016":[0],"1-193052":[0],"1-195014":[0],"1-202007":[0],"1-193048":[0],"1-195040":[0],"1-193051":[0],"1-201019":[0],"1-193034":[0],"1-195050":[0],"1-194019":[0],"1-190002":[0,1],"1-191006":[1],"1-191054":[0,1],"1-184055":[0,1],"1-183042":[0,1],"1-135019":[0],"1-134030":[0],"1-140016":[0],"1-134010":[0],"1-133011":[0,1],"1-131050":[0,1],"1-133002":[0,1],"1-132041":[1],"1-133039":[1],"1-131048":[0],"1-132045":[0,1],"1-150025":[0,1],"1-152035":[0,1],"1-150053":[0,1],"1-173021":[0,1],"1-155018":[0,1],"1-143041":[1],"1-150045":[1],"1-161020":[0,1],"1-163036":[0,1],"1-170054":[0,1],"1-173054":[0,1],"1-172003":[0,1],"1-154026":[0],"1-162036":[1],"1-145043":[0],"2-132018":[0,1],"2-164025":[0,1],"2-161034":[0,1],"2-132047":[0,1],"2-142034":[0,1],"2-134041":[0,1],"2-133016":[1],"2-143009":[0],"2-153010":[0],"2-132053":[1],"2-140046":[0,1],"2-132003":[0,1],"2-132015":[0,1],"2-131043":[0,1],"2-172037":[0,1],"2-131015":[0,1],"2-131016":[0],"2-160006":[1],"2-172044":[0,1],"2-91052":[0,1],"2-93018":[0,1],"2-83036":[0,1],"2-103034":[0,1],"2-83005":[0,1],"2-85021":[0,1],"2-85024":[0,1],"2-94044":[0],"2-84010":[1],"2-85011":[1],"2-92001":[1],"2-105021":[0],"2-83042":[0,1],"2-90020":[0,1],"2-84033":[0,1],"2-90018":[0,1],"2-84001":[0,1],"2-95039":[0,1],"2-90026":[1],"2-84016":[1],"2-92011":[0],"2-102025":[1],"2-105010":[0],"2-83034":[0,1],"2-114045":[0],"2-111011":[0],"2-121019":[0],"2-121025":[0],"2-113042":[0],"2-113040":[0],"2-121052":[0],"2-120005":[0],"2-122049":[0],"2-114025":[0],"2-123019":[0],"2-113011":[0],"2-112021":[0],"2-111030":[0],"2-111016":[0],"2-123007":[0],"2-111061":[0],"2-112025":[0],"2-111017":[0],"2-185008":[1,3]};
-const XON_IDS = new Set([...Object.keys(XON_H), ...DEFAULTS.filter(x => x.g === 'X').map(x => x.d + '-' + x.b)]);
+const XON_IDS = new Set([...Object.keys(XON_H), ...DEFAULTS.filter(x => x.g === 'X').map(defId)]);
 const STORE = 'hyrox-seoul-2026-list-v1';
 
 /* 시상 스케줄: 공식 타임테이블 기준. [요일 번호, 시각] */
@@ -393,11 +400,17 @@ function ampm(t){
 }
 
 /* 시각 계산: 대회는 한국 시간(UTC+9) 기준, 비교는 절대 시각으로 */
-const DUR = 120 * 60000;   /* 출발 후 2시간이 지나면 종료로 간주 */
+const LIVE = 60 * 60000;    /* 출발 후 1시간까지는 '진행 중' */
+const DUR = 90 * 60000;     /* 1시간~1시간 30분은 'N분 경과', 1시간 30분이 지나면 종료로 간주 */
 const AWDUR = 30 * 60000;  /* 시상식은 시작 후 30분 */
 const startMs = (d, t) => Date.UTC(2026, 10, 13 + d, +t.slice(0,2) - 9, +t.slice(3,5));
 const sortT = e => e.tbd ? '99:99' : e.t;
-const stOf = (e, now) => e.tbd ? 'tbd' : now < e.ms ? 'up' : (now < e.ms + DUR ? 'live' : 'done');
+const DONE = new Set();   /* 결과 사이트에 결과가 올라온 팀 id (finished.json) */
+const stOf = (e, now) => e.tbd ? 'tbd' : now < e.ms ? 'up' : DONE.has(e.id) ? 'done' : (now < e.ms + LIVE ? 'live' : (now < e.ms + DUR ? 'over' : 'done'));
+function elapsed(ms, now){
+  const m = Math.max(0, Math.floor((now - ms) / 60000)), h = Math.floor(m / 60);
+  return (h ? h + '시간 ' + String(m % 60).padStart(2, '0') + '분' : m + '분') + ' 경과';
+}
 function until(diff){
   const m = Math.round(diff / 60000);
   if (m < 1) return '곧';
@@ -419,15 +432,15 @@ const E = DATA.rows.map(r => {
     })
   };
 });
-/* XON 출전 명단에는 있지만 시작 리스트에서 아직 찾지 못한 팀: 요일과 디비전만 알고 시간은 미정 */
-/* 같은 날 같은 디비전의 출발 시간 범위 (미정 팀 표시용) */
+/* XON 출전 명단에는 있지만 시작 리스트에서 아직 찾지 못한 팀: 요일과 디비전만 알고 시간은 미확인 */
+/* 같은 날 같은 디비전의 출발 시간 범위 (미확인 팀 표시용) */
 const RNG = {};
 DATA.rows.forEach(r => { const k = r[0] + '-' + r[3], c = RNG[k]; if (!c) RNG[k] = [r[1], r[1]]; else { if (r[1] < c[0]) c[0] = r[1]; if (r[1] > c[1]) c[1] = r[1]; } });
 const tbdRange = e => RNG[e.d + '-' + e.w];
-const PH = [[0,4,["윤승용"]],[0,4,["정성직"]],[0,4,["김동홍"]],[0,4,["함정흠"]],[0,4,["이창규"]],[0,4,["이찬희"]],[0,5,["박세윤"]],[0,5,["허지영"]],[0,3,["박영욱","김희윤"]],[0,3,["최혜윤","장한별"]],[1,4,["정하광"]],[1,4,["강지웅"]],[1,4,["황석현"]],[1,4,["박진민"]],[1,4,["이환우"]],[1,4,["허종원"]],[1,4,["박문석"]],[1,7,["양진광","황석현"]],[1,7,["박범석","김선겸"]],[1,7,["공기환","방민규"]],[1,8,["최세원"]],[1,6,["노경민","차소월"]],[1,6,["Lauren","Carly"]],[1,3,["이우봉","김한나"]],[1,3,["이송현","이승희"]],[1,3,["Krystal Lim"]],[2,2,["한승희","엄슬기"]],[2,2,["조보겸","최세원"]],[2,2,["이정수","조보겸"]],[2,2,["엄옥연","아미"]],[2,5,["이한나"]],[2,3,["임정하","박준영"]],[2,11,["이찬희"]],[2,11,["이우봉","조형근","김창만","곽동현"]],[0,5,["정지혜"]],[0,1,["박현준"]],[0,1,["김동민"]],[1,4,["김정범"]],[1,3,["송지연"]],[2,5,["김서연"]],[2,5,["김지혜"]]];
-PH.forEach(([d, w, names], i) => {
+const PH = [[0,4,["윤승용"]],[0,4,["정성직"]],[0,4,["김동홍"]],[0,4,["함정흠"]],[0,4,["이창규"]],[0,4,["이찬희"]],[0,5,["박세윤"]],[0,5,["허지영"]],[0,3,["박영욱","김희윤"]],[0,3,["최혜윤","장한별"],"18:30"],[1,4,["정하광"]],[1,4,["강지웅"]],[1,4,["황석현"]],[1,4,["박진민"]],[1,4,["이환우"]],[1,4,["허종원"]],[1,4,["박문석"]],[1,7,["양진광","황석현"]],[1,7,["박범석","김선겸"]],[1,7,["공기환","방민규"]],[1,8,["최세원"]],[1,6,["노경민","차소월"]],[1,6,["Lauren","Carly"]],[1,3,["이우봉","김한나"]],[1,3,["이송현","이승희"]],[1,3,["Krystal Lim"]],[2,2,["한승희","엄슬기"]],[2,2,["조보겸","최세원"]],[2,2,["이정수","조보겸"]],[2,2,["엄옥연","아미"]],[2,5,["이한나"]],[2,3,["임정하","박준영"]],[2,11,["이찬희"]],[2,11,["이우봉","조형근","김창만","곽동현"]],[0,5,["정지혜"]],[0,1,["박현준"]],[0,1,["김동민"]],[1,4,["김정범"]],[1,3,["송지연"]],[2,5,["김서연"]],[2,5,["김지혜"]]];
+PH.forEach(([d, w, names, time], i) => {
   const id = 'p' + d + '-' + (i + 1);
-  E.push({id, d, t: '', tbd: true, ms: startMs(d, '23:59'), b: '', w, a: '', p: names,
+  E.push({id, d, t: time || '', tbd: !time, ph: true, ms: startMs(d, time || '23:59'), b: '', w, a: '', p: names,
     keys: names.map(p => { const tk = p.trim().toLowerCase().split(/\s+/); return [norm(tk.join('')), norm(tk.slice().reverse().join(''))]; })});
   XON_IDS.add(id); XON_H[id] = names.map((_, k) => k);
 });
@@ -437,8 +450,8 @@ const byId = new Map(E.map(e => [e.id, e]));
 let list, tab = '0', view = 'time';  /* 기본은 금요일, 대회 기간에는 오늘 요일 */
 const STORE2 = 'hyrox-seoul-2026-list-v2';
 const V1_IDS = ['0-152045','0-152040','0-154048','1-145043','1-154026','1-162036','2-83036','2-83005','2-85024','2-94044','2-102025','2-104002','2-114045'];
-const defItems = () => DEFAULTS.map(x => ({id: x.d + '-' + x.b, l: x.l, h: x.h}));
-/* 저장하는 것은 기본 목록과 다른 부분(추가한 팀, 뺀 기본 팀)뿐이라, 기본 목록이 늘어나도 모두에게 반영돼요 */
+const defItems = () => DEFAULTS.map(x => ({id: defId(x), l: x.l, h: x.h}));
+/* 저장하는 것은 샘플 목록과 다른 부분(추가한 팀, 뺀 기본 팀)뿐이라, 샘플 목록이 늘어나도 모두에게 반영돼요 */
 function load(){
   const defs = defItems();
   let s = null;
@@ -570,8 +583,8 @@ function search(q, divIdx){
 
 /* 소속(XON / F45범계) 필터: 알려진 소속 명단의 카드만 보여줌 */
 let gymSel = '';
-const F45_NAMES = ['고경렬','오근봉','이광용','이동은','진동규','이정수','민수빈','박현솔','박형민','정지은','이수범','이의석','박민영','이수형','김서영','이선영','한채연','이미정','전제이','허민주','방진아','김하은','이가영','조현우','박예진','김태훈','오승진','남채연'];
-const DEF_H = new Map(DEFAULTS.map(x => [x.d + '-' + x.b, x.h]));
+const F45_NAMES = ['고경렬','오근봉','이광용','이동은','진동규','이정수','민수빈','박현솔','박형민','정지은','이수범','이의석','박민영','이수형','김서영','이선영','한채연','이미정','전제이','허민주','방진아','김하은','이가영','조현우','박예진','김태훈','오승진','남채연','지민환','이수민'];
+const DEF_H = new Map(DEFAULTS.map(x => [defId(x), x.h]));
 function gymH(e, g){
   if (g === 'X') return DEF_H.get(e.id) || XON_H[e.id] || [];
   const names = F45_NAMES;
@@ -618,7 +631,7 @@ function renderResults(){
     const di = divs[e.w], on = inList.has(e.id);
     return '<div class="res ' + di.cls + '"><div class="rwhen"><b>' + (e.tbd ? '–' : e.t) + '</b><span>' + DAYS[e.d].d + ' ' + DAYS[e.d].k + '</span></div>' +
       '<div class="info"><div class="names">' + namesHtml(e, gymSel ? h : null) + '</div>' +
-      '<div class="meta"><span class="pill">' + esc(di.label) + '</span>' + (e.tbd ? '<span class="bib">시간 미정</span>' : '<span class="bib">배번 ' + esc(e.b) + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') + gymHtml(e) + '</div></div>' +
+      '<div class="meta"><span class="pill">' + esc(di.label) + '</span>' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '배번 ' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') + gymHtml(e) + '</div></div>' +
       '<button class="addbtn' + (on ? ' on' : '') + '" data-add="' + e.id + '"' + (on ? ' disabled' : '') + '>' + (on ? '추가됨' : '추가') + '</button></div>';
   };
   const cap = gymSel ? 300 : 30, shown = main.slice(0, cap), cshown = cand.slice(0, 30);
@@ -655,9 +668,9 @@ function sortedList(){
 }
 /* 결과 사이트(results.hyrox.com) 연결. 서울 대회 이벤트 ID가 생기면 RESULTS.id에 요일별로 채우면 선수 검색 링크로 바뀝니다. */
 const RESULTS = {
-  show: false,   /* 결과가 올라오면 true로 바꾸면 '결과 보기' 링크가 나타납니다 */
+  show: true,    /* 종료로 표시되는 경기에 '결과 보기' 링크를 붙입니다 */
   url: 'https://results.hyrox.com/season-9/',
-  id: ['', '', '']   /* 금, 토, 일 이벤트 ID. 예: 'LR3MS4JI19CB' */
+  id: ['LR3MS4JI19A2', 'LR3MS4JI19A3', 'LR3MS4JI19A4']   /* 금, 토, 일 이벤트 ID (results.hyrox.com 2026 Seoul) */
 };
 function resPrefix(w){
   const u = w.toUpperCase();
@@ -685,14 +698,15 @@ function gymHtml(e){
 function teamHtml(x, e, clash, st, isNext){
   const di = divs[e.w];
   const chip = st === 'live' ? '<span class="chip live"><i></i>진행 중</span>'
+    : st === 'over' ? '<span class="chip over">' + elapsed(e.ms, Date.now()) + '</span>'
     : st === 'done' ? '<span class="chip done">종료</span>'
     : isNext ? '<span class="chip next">다음</span>' : '';
   return '<div class="team ' + di.cls + '">' +
     '<div class="row1"><span class="pill">' + esc(di.label) + '</span>' + chip + '</div>' +
     '<div class="names">' + namesHtml(e, x.h) + '</div>' +
-    '<div class="meta">' + (e.tbd ? '<span class="bib">시간 미정</span>' : '<span class="bib">배번 ' + esc(e.b) + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
+    '<div class="meta">' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '배번 ' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
     gymHtml(e) +
-    (RESULTS.show ? '<a class="reslink" href="' + resultUrl(x, e) + '" target="_blank" rel="noopener">결과 보기</a>' : '') +
+    (RESULTS.show && st === 'done' ? '<a class="reslink" href="' + resultUrl(x, e) + '" target="_blank" rel="noopener">결과 보기</a>' : '') +
     (clash > 1 && st !== 'done' ? '<span class="clash">같은 시간 ' + clash + '팀 출발</span>' : '') + '</div>' +
     '<button class="x-btn" data-del="' + e.id + '" aria-label="목록에서 삭제"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
 }
@@ -706,7 +720,7 @@ function card(arr, clash, st, nextMs){
   const bg = mixed ? ' style="background:linear-gradient(to bottom,' + cs.map((c, i) => 'color-mix(in srgb,' + c + ' 14%,var(--surface)) ' + (i * 100 / cs.length) + '% ' + ((i + 1) * 100 / cs.length) + '%').join(',') + ')"' : '';
   const done = arr.every(({e}) => st(e) === 'done');
   return '<article class="card ' + cls + (done ? ' done' : '') + '">' +
-    '<div class="stub"' + bg + '>' + (e0.tbd ? (tbdRange(e0) ? '<b class="time tbd"><i>' + tbdRange(e0)[0] + '</i><i>~ ' + tbdRange(e0)[1] + '</i></b><span class="ampm">시간 미정</span>' : '<b class="time tbd">미정</b><span class="ampm">출발 시간 미정</span>') : '<b class="time">' + e0.t + '</b><span class="ampm">' + ampm(e0.t) + '</span>') +
+    '<div class="stub"' + bg + '>' + (e0.tbd ? (tbdRange(e0) ? '<b class="time tbd"><i>' + tbdRange(e0)[0] + '</i><i>~ ' + tbdRange(e0)[1] + '</i></b><span class="ampm">시간 미확인</span>' : '<b class="time tbd">미확인</b><span class="ampm">출발 시간 미확인</span>') : '<b class="time">' + e0.t + '</b><span class="ampm">' + ampm(e0.t) + '</span>') +
     (arr.length > 1 ? '<span class="cnt">' + arr.length + '팀</span>' : '') + '</div>' +
     '<div class="body">' + arr.map(({x, e}) => teamHtml(x, e, clash, st(e), e.ms === nextMs)).join('') + '</div></article>';
 }
@@ -792,13 +806,13 @@ function flowHtml(items, d, now){
       return '<i class="fdot" style="left:' + pct(e.t) + '%;transform:translateY(' + off + 'px)" title="' + e.t + ' ' + esc(teamName(x, e)) + '"></i>';
     }).join('');
     const tb = mine.filter(({e}) => e.tbd);
-    const tdots = tb.map(({x, e}, i) => '<i class="fdot tbd" style="left:' + (+pct(r.r[0]) + (pct(r.r[1]) - pct(r.r[0])) * (i + 1) / (tb.length + 1)).toFixed(2) + '%" title="시간 미정 ' + esc(teamName(x, e)) + '"></i>').join('');
+    const tdots = tb.map(({x, e}, i) => '<i class="fdot tbd" style="left:' + (+pct(r.r[0]) + (pct(r.r[1]) - pct(r.r[0])) * (i + 1) / (tb.length + 1)).toFixed(2) + '%" title="시간 미확인 ' + esc(teamName(x, e)) + '"></i>').join('');
     anyTbd = anyTbd || tb.length > 0;
     const w = Math.max(0.5, pct(r.r[1]) - pct(r.r[0])).toFixed(2);
     html += '<div class="flabel' + (mine.length ? ' on' : '') + '"><b>' + esc(r.l) + '</b><small>' + r.r[0] + '–' + r.r[1] + '</small></div>' +
       '<div class="ftrack"><i class="fbar ' + r.c + (mine.length ? ' on' : '') + '" style="left:' + pct(r.r[0]) + '%;width:' + w + '%"></i>' + nowLine + dots + tdots + '</div>';
   });
-  return html + '</div><p class="flegend"><i></i>내 팀 출발 시각' + (anyTbd ? '<i class="tbd"></i>시간 미정(범위 안 어딘가)' : '') + '</p></div>';
+  return html + '</div><p class="flegend"><i></i>내 팀 출발 시각' + (anyTbd ? '<i class="tbd"></i>시간 미확인(범위 안 어딘가)' : '') + '</p></div>';
 }
 const flap = t => t.split('').map(c => c === ':' ? '<span class="colon">:</span>' : '<span class="fl">' + c + '</span>').join('');
 function renderNext(all, now){
@@ -809,20 +823,22 @@ function renderNext(all, now){
   }
   const live = all.filter(({e}) => stOf(e, now) === 'live');
   const up = all.filter(({e}) => stOf(e, now) === 'up');
-  if (!live.length && !up.length && all.some(({e}) => e.tbd)){
-    el.innerHTML = '<div class="slab calm"><p class="big">확정된 출발 시간이 없어요</p><p class="sm">시간이 미정인 팀은 아래 목록에서 확인하세요.</p></div>';
+  const over = all.filter(({e}) => stOf(e, now) === 'over');
+  if (!live.length && !up.length && !over.length && all.some(({e}) => e.tbd)){
+    el.innerHTML = '<div class="slab calm"><p class="big">확인된 출발 시간이 없어요</p><p class="sm">시간이 미확인인 팀은 아래 목록에서 확인하세요.</p></div>';
     return;
   }
-  if (!live.length && !up.length){
+  if (!live.length && !up.length && !over.length){
     el.innerHTML = '<div class="slab calm"><p class="big">모든 경기가 끝났어요</p><p class="sm">수고하셨습니다. 시상식 일정은 아래에서 확인하세요.</p></div>';
     return;
   }
   const isLive = live.length > 0;
-  const pool = isLive ? live : up.filter(({e}) => e.ms === up[0].e.ms);
+  const isOver = !isLive && !up.length;
+  const pool = isLive ? live : up.length ? up.filter(({e}) => e.ms === up[0].e.ms) : over;
   const e0 = pool[0].e;
-  const cd = isLive ? '출발 ' + Math.max(1, Math.round((now - e0.ms) / 60000)) + '분 경과' : until(e0.ms - now);
+  const cd = isLive || isOver ? '출발 ' + elapsed(e0.ms, now) : until(e0.ms - now);
   const shownP = pool.slice(0, 3).map(({x, e}) => '<div class="wl"><b>' + esc(teamName(x, e)) + '</b><span>' + esc(divs[e.w].label) + '</span></div>').join('');
-  el.innerHTML = '<div class="slab"><div class="stop"><span class="chip ' + (isLive ? 'live' : 'next') + '">' + (isLive ? '<i></i>진행 중' : '다음 출발') + '</span>' +
+  el.innerHTML = '<div class="slab"><div class="stop"><span class="chip ' + (isLive ? 'live' : isOver ? 'over' : 'next') + '">' + (isLive ? '<i></i>진행 중' : isOver ? '곧 종료' : '다음 출발') + '</span>' +
     '<span class="cd">' + cd + '</span></div>' +
     '<div class="sday">' + DAYS[e0.d].d + '(' + DAYS[e0.d].k + ')</div>' +
     '<div class="flaps" aria-label="' + e0.t + '">' + flap(e0.t) + '</div>' +
@@ -913,7 +929,7 @@ function summaryText(){
     const aw = awardRows(sortedList(), d);
     if (!day.length && !aw.length) return;
     lines.push((lines.length ? '\n' : '') + DAYS[d].d + '(' + DAYS[d].k + ')');
-    day.forEach(({x, e}) => lines.push((e.tbd ? '시간 미정' : e.t) + ' ' + teamName(x, e) + ' - ' + divs[e.w].label));
+    day.forEach(({x, e}) => lines.push((e.tbd ? '시간 미확인' : e.t) + ' ' + teamName(x, e) + ' - ' + divs[e.w].label));
     aw.forEach(r => lines.push('시상식 ' + r.a[1] + ' - ' + divs[r.w].label + ' (' + r.who.join(', ') + ')'));
   });
   return '오늘 누구 응원하지? · HYROX Seoul 2026\n' + lines.join('\n');
@@ -975,7 +991,7 @@ function setView(){
   document.getElementById('v-div').setAttribute('aria-pressed', view === 'div');
   renderBoard();
 }
-/* 초기화와 기본 목록 복원은 실수로 누르기 쉬워서 두 번 눌러야 실행돼요 */
+/* 초기화와 샘플 목록 복원은 실수로 누르기 쉬워서 두 번 눌러야 실행돼요 */
 document.querySelectorAll('.js-reset').forEach(btn => {
   const lbl = btn.querySelector('.lbl'), orig = lbl.textContent;
   let timer = null;
@@ -989,7 +1005,7 @@ document.querySelectorAll('.js-reset').forEach(btn => {
     const clear = btn.dataset.act === 'clear';
     list = clear ? [] : defItems();
     save(); renderBoard(); renderResults();
-    toast(clear ? '목록을 비웠어요' : '기본 목록을 불러왔어요');
+    toast(clear ? '목록을 비웠어요' : '샘플 목록을 불러왔어요');
   };
 });
 document.getElementById('copy').onclick = async () => {
@@ -1016,6 +1032,13 @@ document.getElementById('copy').onclick = async () => {
   document.getElementById('stamp').textContent = '출처 startlist.hyrox.com, 2026 Seoul 전체 ' + DATA.rows.length.toLocaleString('ko-KR') + '팀과 선수, ' + (dt.getMonth() + 1) + '월 ' + dt.getDate() + '일 수집';
   renderBoard();
   setInterval(renderBoard, 60000);
+  /* 결과가 올라온 경기는 시간과 상관없이 종료로 표시 (GitHub Actions가 5분마다 finished.json을 갱신) */
+  const loadDone = () => fetch('finished.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
+    if (!j || !Array.isArray(j.done)) return;
+    const n = DONE.size; DONE.clear(); j.done.forEach(id => DONE.add(id));
+    if (DONE.size !== n) renderBoard();
+  }).catch(() => {});
+  if (typeof fetch === 'function'){ loadDone(); setInterval(loadDone, 120000); }
 })();
 </script>
 <script data-goatcounter="https://yeong9.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
