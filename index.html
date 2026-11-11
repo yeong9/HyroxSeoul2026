@@ -246,7 +246,7 @@ footer p{margin:0 0 8px}
 .guide ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px}
 .guide li{font-size:14px;line-height:1.5;color:var(--slab-mute)}
 .guide li b{display:block;color:var(--amber);font-size:14px;margin-bottom:1px}
-.mapcard{display:flex;align-items:center;gap:12px;width:100%;margin:12px 0 0;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);text-align:left}
+.mapcard{color:inherit;text-decoration:none;display:flex;align-items:center;gap:12px;width:100%;margin:12px 0 0;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);text-align:left}
 .mapcard svg{flex:none;color:var(--ink)}
 .mapcard b{display:block;font-size:15px}
 .mapcard span{display:block;margin-top:1px;font-size:12.5px;color:var(--mute);line-height:1.4}
@@ -270,6 +270,19 @@ footer p{margin:0 0 8px}
 .exs .row1{flex-wrap:nowrap}
 .exs .pill{white-space:nowrap}
 .exn{margin:10px 0 0;font-size:12.5px;color:var(--slab-mute);line-height:1.45}
+.visit{margin:12px 0 0}
+.visit summary{list-style:none;cursor:pointer;margin:0}
+.visit summary::-webkit-details-marker{display:none}
+.visit summary .chev{margin-left:auto;transition:transform .2s;color:var(--mute)}
+.visit[open] summary .chev{transform:rotate(180deg)}
+.visit[open] summary{border-bottom-left-radius:0;border-bottom-right-radius:0}
+.vbody{padding:14px 16px 16px;border:1px solid var(--line);border-top:0;border-radius:0 0 16px 16px;background:var(--surface)}
+.vbody h3{margin:16px 0 4px;font-size:14px}
+.vbody p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink)}
+.vbtn{display:block;width:100%;border:0;text-align:center;padding:13px 16px;border-radius:14px;background:var(--amber);color:#2a1a00;font-weight:700;font-size:15px;text-decoration:none}
+.vbtn.ghost{margin-top:8px;background:var(--bg);color:var(--ink);border:1.5px solid var(--ink)}
+.vlinks{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px!important}
+.vlinks a{color:var(--ink);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
 .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
 .toast.on{opacity:1}
 @media (prefers-reduced-motion:reduce){.fab.nudge{animation:none}.panel{animation:none}.toast{transition:none}.chip.live i{animation:none}}
@@ -287,7 +300,19 @@ footer p{margin:0 0 8px}
 
   <div id="next" aria-live="polite"></div>
 
-  <button class="mapcard" id="mapopen" type="button"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4l-6 2v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg><div><b>경기장 지도</b><span>입구, 각 스테이션, 시상대, 화장실, 급수대 위치</span></div></button>
+  <details class="visit" id="visit">
+    <summary class="mapcard"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9a2 2 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a2 2 0 0 1 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/><path d="M14 5v14" stroke-dasharray="2 3"/></svg><div><b>관람 안내</b><span>관람 티켓, 경기장 지도, 교통·주차, 대회 가이드</span></div><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="vbody">
+      <a class="vbtn" id="ticket" href="https://korea.hyrox.com/event/hyrox-seoul-season-26-27-vthaza" target="_blank" rel="noopener noreferrer">관람 티켓 구매 (공식 예매처)</a>
+      <button class="vbtn ghost" id="mapopen" type="button">경기장 지도 보기</button>
+      <h3>교통·주차</h3>
+      <p>킨텍스 (경기도 고양시 일산서구 킨텍스로 217-60). 주차 요금은 시간당 3,720원, 종일 19,000원이고 5시간 이상 주차하면 종일권이 더 저렴해요.</p>
+      <p class="vlinks"><a href="https://www.kintex.com/web/ko/html/company/contact.do" target="_blank" rel="noopener noreferrer">오시는 길</a><a href="https://www.kintex.com/web/en/service/parking_user.do" target="_blank" rel="noopener noreferrer">주차 안내</a></p>
+      <h3>대회 가이드</h3>
+      <p>짐 보관 같은 자세한 안내는 공식 대회 가이드에 있어요.</p>
+      <p class="vlinks"><a href="https://hyroxsouthkorea.com/wp-content/uploads/2026/11/SEOUL-UPDATES_2026-HYROX-EVENT-GUIDE-1.pdf" target="_blank" rel="noopener noreferrer">대회 가이드 (PDF)</a><a href="https://hyroxsouthkorea.com/ko/event/airasia-%ed%95%98%ec%9d%b4%eb%a1%9d%ec%8a%a4-%ec%84%9c%ec%9a%b8/" target="_blank" rel="noopener noreferrer">대회 공식 안내</a></p>
+    </div>
+  </details>
 
   <div class="viewbar">
     <div class="seg" role="group" aria-label="보기 방식">
@@ -310,7 +335,7 @@ footer p{margin:0 0 8px}
 
   <footer>
     <p id="stamp"></p>
-    <p>Made by yeong9, <a href="https://www.instagram.com/yeong9_/" target="_blank" rel="noopener">instagram.com/yeong9_</a>. HYROX 공식 페이지가 아닌 개인 제작 도구예요.</p>
+    <p>Made by yeong9, <a href="https://www.instagram.com/yeong9_/" target="_blank" rel="noopener">instagram.com/yeong9_</a>. HYROX 공식 페이지가 아닌 개인 제작 도구예요. 대회 공식 안내는 <a href="https://hyroxsouthkorea.com/ko/event/airasia-%ed%95%98%ec%9d%b4%eb%a1%9d%ec%8a%a4-%ec%84%9c%ec%9a%b8/" target="_blank" rel="noopener noreferrer">HYROX 코리아 대회 페이지</a>에서 확인하세요.</p>
     <p>시상식 시간은 대회 공식 타임테이블 기준이고, 공지에 따라 바뀔 수 있어요. 경기 상태는 출발 시각을 기준으로 한 추정이에요(출발 후 1시간까지 '진행 중', 1시간부터 1시간 30분까지 경과 시간, 이후 '종료'). 결과 사이트에 결과가 올라온 경기는 바로 종료로 바뀌고 '결과 확인' 링크가 붙지만, 결과 페이지의 공개 시점과 이 화면의 반영 사이에는 몇 분 정도 시간 차이가 있을 수 있어요. 한국 시간 기준으로 1분마다 갱신돼요. 출전 명단은 대회 공식 스타트리스트를 매일 오전 10시와 오후 6시에 다시 받아와서 반영해요. 아직 스타트리스트에 없어서 '시간 미확인'으로 둔 팀도 등록되면 자동으로 실제 출발 시간에 연결되고, 새로 등록된 팀은 검색에 나타나요. 스타트리스트 자체가 대회 직전까지 바뀔 수 있어서 출발 시간이 달라질 수도 있어요.</p>
     <p>웨이브가 바뀌거나 등록이 추가되면 데이터를 다시 받아 갱신해야 해요. 목록의 추가와 삭제는 이 기기의 브라우저에만 저장돼요.</p>
   </footer>
