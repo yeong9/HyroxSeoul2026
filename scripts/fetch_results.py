@@ -56,7 +56,7 @@ def strip(s):
 
 
 def parse_rows(page):
-    """[(이름 목록, 연령대, 기록)] — 기록이 없는 줄은 건너뜀"""
+    """[(이름 목록, 연령대, 기록, 순위, 상세 id)] — 기록이 없는 줄은 건너뜀"""
     out = []
     for blk in re.findall(r'<li class="[^"]*list-group-item row[^"]*">(.*?)</li>', page, re.S):
         m = re.search(r'<h4[^>]*class="[^"]*list-field[^"]*"[^>]*>(.*?)</h4>', blk, re.S)
@@ -81,7 +81,9 @@ def parse_rows(page):
         t = re.search(r'type-time[^>]*>(?:<div[^>]*>.*?</div>)?\s*(\d+:\d\d:\d\d)', blk, re.S)
         if not t:
             continue
-        out.append((names, strip(a.group(1)) if a else '', t.group(1)))
+        rk = re.search(r'type-place place-primary[^>]*>\s*(\d+)\s*<', blk)
+        ip = re.search(r'idp=([A-Za-z0-9]+)', blk)
+        out.append((names, strip(a.group(1)) if a else '', t.group(1), int(rk.group(1)) if rk else 0, ip.group(1) if ip else ''))
     return out
 
 
@@ -109,7 +111,7 @@ def main():
     for d, _t, bib, w, age, people in data['rows']:
         idx.setdefault((d, prefix(waves[w])), []).append((f'{d}-{bib}', age, {norm(p) for p in people}))
 
-    done, errors = set(), 0
+    done, recs, errors = set(), {}, 0
     for d in range(3):
         for pre in EVENTS[d]:
             cands = idx.get((d, pre))
@@ -121,13 +123,14 @@ def main():
                 errors += 1
                 print(f'warn: {pre} day{d}: {e}', file=sys.stderr)
                 continue
-            for names, age, _total in rows:
+            for names, age, total, rank, idp in rows:
                 res = {norm(n) for n in names}
                 for tid, a, ppl in cands:
                     if ppl and ppl <= res and (not a or not age or a == age):
                         done.add(tid)
+                        recs[tid] = [total, rank, idp]
     json.dump({'updated': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-               'errors': errors, 'done': sorted(done)}, sys.stdout, ensure_ascii=False)
+               'errors': errors, 'done': sorted(done), 'res': recs}, sys.stdout, ensure_ascii=False)
 
 
 if __name__ == '__main__':
