@@ -240,8 +240,9 @@ footer p{margin:0 0 8px}
 .rec b{font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
 .nowbtn{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;border:0;border-radius:999px;padding:10px 18px;background:var(--slab);color:var(--slab-ink);font-weight:700;font-size:14px;box-shadow:0 8px 20px -8px rgba(0,0,0,.5);white-space:nowrap}
 .nowbtn[hidden]{display:none}
-.slab.guide{padding:18px}
-.guide .gt{margin:12px 0 4px;font-size:18px;font-weight:700}
+.slab.guide{padding:16px 12px 16px}
+.guide .stop,.guide .gt,.guide .exn{padding-left:4px;padding-right:4px}
+.guide .gt{margin:12px 0 4px;font-size:16px;font-weight:700}
 .guide ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px}
 .guide li{font-size:14px;line-height:1.5;color:var(--slab-mute)}
 .guide li b{display:block;color:var(--amber);font-size:14px;margin-bottom:1px}
@@ -260,12 +261,14 @@ footer p{margin:0 0 8px}
 .mapfab{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;padding:0}
 .mapfab:active{transform:scale(.95)}
 .exs{display:grid;gap:8px;margin-top:10px}
-.exs .card{margin:0;pointer-events:none;color:var(--ink);grid-template-columns:96px 1fr}
+.exs .card{margin:0;pointer-events:none;color:var(--ink);grid-template-columns:78px 1fr}
 .exs .card.done{opacity:1}
-.exs .stub{padding:10px 8px 10px 14px}
-.exs .stub .time{font-size:26px}
+.exs .stub{padding:10px 6px 10px 10px}
+.exs .stub .time{font-size:22px}
 .exs .body .row1{padding-right:0}
-.exs .team{padding:10px 12px}
+.exs .team{padding:10px 10px 10px 12px}
+.exs .row1{flex-wrap:nowrap}
+.exs .pill{white-space:nowrap}
 .exn{margin:10px 0 0;font-size:12.5px;color:var(--slab-mute);line-height:1.45}
 .toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}
 .toast.on{opacity:1}
