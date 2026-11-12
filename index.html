@@ -239,6 +239,7 @@ footer p{margin:0 0 8px}
 .res .meta{margin-top:6px}
 .addbtn{border:0;border-radius:999px;padding:9px 16px;font-weight:700;background:var(--ink);color:var(--bg)}
 .addbtn.on{background:var(--bg);color:var(--mute)}
+.recrow{flex:0 0 100%;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-top:2px}
 .rec{display:inline-flex;align-items:baseline;gap:7px;font-size:11px;color:var(--mute)}
 .rec b{font-family:var(--font-display);font-weight:800;font-size:22px;line-height:1;letter-spacing:-.01em;color:var(--ink);font-variant-numeric:tabular-nums}
 .nowbtn{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;border:0;border-radius:999px;padding:10px 18px;background:var(--slab);color:var(--slab-ink);font-weight:700;font-size:14px;box-shadow:0 8px 20px -8px rgba(0,0,0,.5);white-space:nowrap}
@@ -261,8 +262,6 @@ footer p{margin:0 0 8px}
 .mapscroll{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .mapscroll img{display:block;width:100%;height:auto;max-width:none}
 .maphint{flex:none;margin:0;padding:8px 16px calc(10px + env(safe-area-inset-bottom));color:rgba(255,255,255,.7);font-size:12.5px;line-height:1.45}
-.mapfab{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;padding:0}
-.mapfab:active{transform:scale(.95)}
 .exs{display:grid;gap:8px;margin-top:10px}
 .exs .card{margin:0;pointer-events:none;color:var(--ink);grid-template-columns:78px 1fr}
 .exs .card.done{opacity:1}
@@ -349,7 +348,6 @@ footer p{margin:0 0 8px}
 <nav class="dock" aria-label="날짜 선택">
   <div class="dockin">
     <div class="days" id="tabs" role="tablist" aria-label="날짜"></div>
-    <button class="mapfab" id="mapopen2" type="button" aria-label="경기장 지도"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4l-6 2v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg></button>
     <button class="fab" id="add" aria-label="사람 추가"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
   </div>
 </nav>
@@ -371,7 +369,7 @@ footer p{margin:0 0 8px}
     <div class="sform">
       <div class="field">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-        <input id="q" type="search" placeholder="이름이나 배번, 예) 이선영" autocomplete="off" aria-label="선수 이름 또는 배번">
+        <input id="q" type="search" placeholder="이름이나 배번, '코치'로도 검색해요" autocomplete="off" aria-label="선수 이름 또는 배번">
         <button class="qclear" id="qclear" type="button" aria-label="입력 지우기" hidden><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <div class="gymchips" id="gymchips" role="group" aria-label="소속 필터">
@@ -381,7 +379,7 @@ footer p{margin:0 0 8px}
       </div>
       <select id="qdiv" aria-label="디비전 필터"><option value="">전체 디비전</option></select>
     </div>
-    <p class="hint">성과 이름 순서, 띄어쓰기는 상관없어요. 더블 파트너는 이름 두 개를 /로 이어 입력하면 한 번에 찾아요. 영문으로 등록한 분은 영문으로 검색하세요. 추가한 사람은 이 기기의 브라우저에만 저장돼요.</p>
+    <p class="hint">성과 이름 순서, 띄어쓰기는 상관없어요. 더블 파트너는 이름 두 개를 /로 이어 입력하면 한 번에 찾아요. 영문으로 등록한 분은 영문으로 검색하세요. ‘코치’를 입력하면 XON·F45범계 코치님 경기만 모아 볼 수 있어요. 추가한 사람은 이 기기의 브라우저에만 저장돼요.</p>
     <div class="results" id="results" aria-live="polite"></div>
   </section>
 </div>
@@ -656,6 +654,36 @@ function search(q, divIdx){
   return out;
 }
 
+/* 코치님 목록: '코치'를 검색하면 아래 코치님이 출전하는 경기만 모아 보여줌 (소속 출전 명단과 겹치는 경기만) */
+const COACHES = {X:['정원준','공기환','정재민','도유권','장한별'], F:['남채연','오승진','진동규']};
+const isCoachQ = q => /^코치(님|분|들)?$/.test(q.trim());
+/* 숨은 검색어: '영구' → 내 경기(일 08:50 이선영) */
+const isCheatQ = q => norm(q.trim()) === '영구';
+function searchCoach(divIdx, g){
+  const map = new Map();
+  for (const gk of ['X','F']){
+    if (g && g !== gk) continue;
+    const set = gk === 'F' ? F45_IDS : XON_IDS;
+    for (const name of COACHES[gk]){
+      const r = search(name, divIdx);
+      if (!Array.isArray(r)) continue;
+      for (const x of r){
+        if (!set.has(x.e.id)) continue;
+        const m = map.get(x.e.id) || {e: x.e, h: []};
+        x.h.forEach(i => { if (!m.h.includes(i)) m.h.push(i); });
+        map.set(x.e.id, m);
+      }
+    }
+  }
+  const out = [...map.values()]; out.forEach(m => m.h.sort((a, b) => a - b));
+  out.sort(byDiv);
+  return out;
+}
+function searchCheat(divIdx){
+  const e = byId.get('2-85024');
+  return e && (divIdx === '' || e.w === +divIdx) ? [{e, h: [1]}] : [];
+}
+
 /* 소속(XON / F45범계) 필터: 알려진 소속 명단의 카드만 보여줌 */
 let gymSel = '';
 const F45_NAMES = ['고경렬','오근봉','이광용','이동은','진동규','이정수','민수빈','박현솔','박형민','정지은','이수범','이의석','박민영','이수형','김서영','이선영','한채연','이미정','전제이','허민주','방진아','김하은','이가영','조현우','박예진','김태훈','오승진','남채연','지민환','이수민'];
@@ -696,7 +724,8 @@ function namesHtml(e, h){
 function renderResults(){
   const box = document.getElementById('results');
   const q = document.getElementById('q').value;
-  const r = gymSel ? searchGym(q, document.getElementById('qdiv').value, gymSel) : search(q, document.getElementById('qdiv').value);
+  const dv = document.getElementById('qdiv').value, coachMode = isCoachQ(q);
+  const r = coachMode ? searchCoach(dv, gymSel) : isCheatQ(q) ? searchCheat(dv) : gymSel ? searchGym(q, dv, gymSel) : search(q, dv);
   if (r === null){ box.innerHTML = '<p class="hint">이름이나 배번을 입력하면 결과가 여기에 나옵니다.</p>'; return; }
   if (r === 'short'){ box.innerHTML = '<p class="hint">두 글자 이상 입력해 주세요.</p>'; return; }
   if (!r.length){ box.innerHTML = '<p class="hint">검색 결과가 없습니다. 영문으로 등록한 분은 영문 철자로 찾아보세요.</p>'; return; }
@@ -705,7 +734,7 @@ function renderResults(){
   const row = ({e, h}) => {
     const di = divs[e.w], on = inList.has(e.id);
     return '<div class="res ' + di.cls + '"><div class="rwhen"><b>' + (e.tbd ? '–' : e.t) + '</b><span>' + DAYS[e.d].d + ' ' + DAYS[e.d].k + '</span></div>' +
-      '<div class="info"><div class="names">' + namesHtml(e, gymSel ? h : null) + '</div>' +
+      '<div class="info"><div class="names">' + namesHtml(e, gymSel || coachMode || isCheatQ(q) ? h : null) + '</div>' +
       '<div class="meta"><span class="pill">' + esc(di.label) + '</span>' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '#' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') + gymHtml(e) + '</div></div>' +
       '<button class="addbtn' + (on ? ' on' : '') + '" data-add="' + e.id + '"' + (on ? ' disabled' : '') + '>' + (on ? '추가됨' : '추가') + '</button></div>';
   };
@@ -714,7 +743,7 @@ function renderResults(){
     (cand.length ? '<div class="candhead"><b>영문으로 등록한 분일 수 있어요</b><span>한글 이름을 로마자로 바꿔 비슷한 이름을 찾았어요. 이름이 맞는지 확인하고 추가하세요. (' + cand.length + '건' + (cand.length > cshown.length ? ', 30건만 표시' : '') + ')</span></div>' + cshown.map(row).join('') : '') +
     '';
   const pend = main.filter(({e}) => !inList.has(e.id));
-  if (gymSel && pend.length){
+  if ((gymSel || coachMode) && pend.length){
     box.insertAdjacentHTML('afterbegin', '<button class="addall" id="addall" type="button">' + pend.length + '팀 모두 추가</button>');
     const ab = document.getElementById('addall');
     ab.onclick = () => {
@@ -788,8 +817,8 @@ function teamHtml(x, e, clash, st, isNext){
     '<div class="names">' + namesHtml(e, x.h) + '</div>' +
     '<div class="meta">' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '#' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
     gymHtml(e) +
-    (RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<span class="rec"><b>' + esc(recTime(RES[e.id][0])) + '</b>' + (RES[e.id][1] ? '전체 ' + RES[e.id][1] + '위' : '') + '</span>' : '') +
-    (RESULTS.show && (st === 'over' || st === 'done') ? '<a class="reslink ' + (DONE.has(e.id) ? 'ok' : 'wait') + '" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">' + (DONE.has(e.id) ? '결과 확인' : st === 'done' ? '결과 미확인' : '결과 집계중') + '</a>' : '') +
+    ((r, l) => r || l ? '<div class="recrow">' + r + l + '</div>' : '')((RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<span class="rec"><b>' + esc(recTime(RES[e.id][0])) + '</b>' + (RES[e.id][1] ? '전체 ' + RES[e.id][1] + '위' : '') + '</span>' : ''),
+      (RESULTS.show && (st === 'over' || st === 'done') ? '<a class="reslink ' + (DONE.has(e.id) ? 'ok' : 'wait') + '" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">' + (DONE.has(e.id) ? '결과 확인' : st === 'done' ? '결과 미확인' : '결과 집계중') + '</a>' : '')) +
     (clash > 1 && st !== 'done' ? '<span class="clash">같은 시간 ' + clash + '팀 출발</span>' : '') + '</div>' +
     '<button class="x-btn" data-del="' + e.id + '" aria-label="목록에서 삭제"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
 }
@@ -907,7 +936,7 @@ function guideEx(){
     '<div class="row1"><span class="pill">' + esc(di.label) + '</span>' + chip + '</div><div class="names"><span class="me">영구</span></div>' +
     '<div class="meta">' + extra + gyms + '</div></div></div></article>';
   return one('<span class="chip live"><i></i>진행 중</span>', '', false, '25분 경과') +
-    one('<span class="chip done">종료</span>', '<span class="rec"><b>1:20:36</b>전체 99위</span><span class="reslink ok">결과 확인</span>', true);
+    one('<span class="chip done">종료</span>', '<div class="recrow"><span class="rec"><b>1:20:36</b>전체 99위</span><span class="reslink ok">결과 확인</span></div>', true);
 }
 function renderNext(all, now){
   const el = document.getElementById('next');
@@ -1133,7 +1162,6 @@ document.getElementById('copy').onclick = async () => {
   const open = () => { if (!im.getAttribute('src')) im.src = 'img/hyroxseoulmap.webp'; mv.hidden = false; document.body.style.overflow = 'hidden'; zi = 0; im.style.width = '100%'; };
   const close = () => { mv.hidden = true; document.body.style.overflow = ''; };
   document.getElementById('mapopen').onclick = open;
-  document.getElementById('mapopen2').onclick = open;
   mv.querySelector('[data-close]').onclick = close;
   mv.querySelectorAll('[data-z]').forEach(b => b.onclick = () => { zi = Math.max(0, Math.min(Z.length - 1, zi + +b.dataset.z)); apply(); });
   im.ondblclick = () => { zi = zi >= Z.length - 1 ? 0 : zi + 1; apply(); };
