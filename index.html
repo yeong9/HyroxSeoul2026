@@ -83,6 +83,8 @@ h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-
 .slab .chip.next{background:rgba(255,255,255,.14);color:var(--slab-ink)}
 .chip.over{background:color-mix(in srgb,var(--amber) 22%,var(--bg));color:var(--ink)}
 .chip.done{background:var(--bg);color:var(--mute)}
+.card .chip{font-size:11px;padding:1px 8px;gap:5px}
+.card .chip.live i{width:6px;height:6px}
 @keyframes pulse{50%{opacity:.25}}
 
 /* view bar */
@@ -109,6 +111,7 @@ h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-
 .stub::before{top:-9px} .stub::after{bottom:-9px}
 .time{white-space:nowrap;font-family:var(--font-display);font-weight:800;font-size:42px;line-height:.95;letter-spacing:0;font-variant-numeric:tabular-nums}
 .ampm{margin-top:5px;font-size:12px;color:var(--mute)}
+.ampm.run{font-weight:700;color:var(--ink)}
 .body{padding:12px 16px;min-width:0}
 .body .row1{padding-right:34px}
 .team{position:relative;min-width:0}
@@ -120,7 +123,7 @@ h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-
 .time.tbd i{display:block;font-style:normal}
 .cnt{margin-top:6px;align-self:flex-start;font-size:11.5px;font-weight:600;color:var(--mute);background:var(--bg);border-radius:999px;padding:1px 8px}
 .row1{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent);padding:2px 10px;border-radius:999px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent);padding:1px 8px;border-radius:999px}
 .reslink{color:var(--mute);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
 .reslink.ok{color:var(--ink);font-weight:700;text-decoration-color:var(--amber);text-decoration-thickness:2px}
 .gyms{display:inline-flex;gap:10px;white-space:nowrap}
@@ -128,7 +131,7 @@ h1{margin:0;font-family:var(--font-display);font-weight:800;font-size:34px;line-
 .gym{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--mute)}
 .gym::before{content:"";width:3px;height:11px;border-radius:2px;background:var(--gc)}
 .gym.gF{--gc:var(--gf)}.gym.gX{--gc:var(--gx)}
-.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
 .names{margin-top:8px;font-size:17px;line-height:1.4;font-weight:500;overflow-wrap:anywhere}
 .names .me{font-weight:700;background:linear-gradient(transparent 58%,var(--hl) 58%);padding:0 2px;border-radius:2px}
 .names .sep{color:var(--mute);margin:0 6px;font-weight:400}
@@ -236,8 +239,8 @@ footer p{margin:0 0 8px}
 .res .meta{margin-top:6px}
 .addbtn{border:0;border-radius:999px;padding:9px 16px;font-weight:700;background:var(--ink);color:var(--bg)}
 .addbtn.on{background:var(--bg);color:var(--mute)}
-.rec{display:inline-flex;align-items:baseline;gap:6px;font-size:12.5px;color:var(--mute)}
-.rec b{font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+.rec{display:inline-flex;align-items:baseline;gap:7px;font-size:11px;color:var(--mute)}
+.rec b{font-family:var(--font-display);font-weight:800;font-size:22px;line-height:1;letter-spacing:-.01em;color:var(--ink);font-variant-numeric:tabular-nums}
 .nowbtn{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;border:0;border-radius:999px;padding:10px 18px;background:var(--slab);color:var(--slab-ink);font-weight:700;font-size:14px;box-shadow:0 8px 20px -8px rgba(0,0,0,.5);white-space:nowrap}
 .nowbtn[hidden]{display:none}
 .slab.guide{padding:16px 12px 16px}
@@ -337,7 +340,7 @@ footer p{margin:0 0 8px}
   <footer>
     <p id="stamp"></p>
     <p>Made by yeong9, <a href="https://www.instagram.com/yeong9_/" target="_blank" rel="noopener">instagram.com/yeong9_</a>. HYROX 공식 페이지가 아닌 개인 제작 도구예요. 대회 공식 안내는 <a href="https://hyroxsouthkorea.com/ko/event/airasia-%ed%95%98%ec%9d%b4%eb%a1%9d%ec%8a%a4-%ec%84%9c%ec%9a%b8/" target="_blank" rel="noopener noreferrer">HYROX 코리아 대회 페이지</a>에서 확인하세요.</p>
-    <p>시상식 시간은 대회 공식 타임테이블 기준이고, 공지에 따라 바뀔 수 있어요. 경기 상태는 출발 시각을 기준으로 한 추정이에요(출발 후 1시간까지 '진행 중', 1시간부터 1시간 30분까지 경과 시간, 이후 '종료'). 결과 사이트에 결과가 올라온 경기는 바로 종료로 바뀌고 '결과 확인' 링크가 붙지만, 결과 페이지의 공개 시점과 이 화면의 반영 사이에는 몇 분 정도 시간 차이가 있을 수 있어요. 출발 1시간 30분이 지나도 결과를 찾지 못하면 '결과 미확인'으로 표시하고 결과 검색 페이지로 연결해요(이름 표기가 달라 자동으로 못 찾을 수도 있어요). 한국 시간 기준으로 1분마다 갱신돼요. 출전 명단은 대회 공식 스타트리스트를 매일 오전 10시와 오후 6시에 다시 받아와서 반영해요. 아직 스타트리스트에 없어서 '시간 미확인'으로 둔 팀도 등록되면 자동으로 실제 출발 시간에 연결되고, 새로 등록된 팀은 검색에 나타나요. 스타트리스트 자체가 대회 직전까지 바뀔 수 있어서 출발 시간이 달라질 수도 있어요.</p>
+    <p>시상식 시간은 대회 공식 타임테이블 기준이고, 공지에 따라 바뀔 수 있어요. 경기 상태는 출발 시각을 기준으로 한 추정이에요(출발 후 1시간 30분까지는 '진행 중'으로 보여주고 출발 후 시간을 '40분 경과'처럼 표시하며, 이후 '종료'). 결과 사이트에 결과가 올라온 경기는 바로 종료로 바뀌고 '결과 확인' 링크가 붙지만, 결과 페이지의 공개 시점과 이 화면의 반영 사이에는 몇 분 정도 시간 차이가 있을 수 있어요. 출발 1시간 30분이 지나도 결과를 찾지 못하면 '결과 미확인'으로 표시하고 결과 검색 페이지로 연결해요(이름 표기가 달라 자동으로 못 찾을 수도 있어요). 한국 시간 기준으로 1분마다 갱신돼요. 출전 명단은 대회 공식 스타트리스트를 매일 오전 10시와 오후 6시에 다시 받아와서 반영해요. 아직 스타트리스트에 없어서 '시간 미확인'으로 둔 팀도 등록되면 자동으로 실제 출발 시간에 연결되고, 새로 등록된 팀은 검색에 나타나요. 스타트리스트 자체가 대회 직전까지 바뀔 수 있어서 출발 시간이 달라질 수도 있어요.</p>
     <p>웨이브가 바뀌거나 등록이 추가되면 데이터를 다시 받아 갱신해야 해요. 목록의 추가와 삭제는 이 기기의 브라우저에만 저장돼요.</p>
   </footer>
 </div>
@@ -479,7 +482,7 @@ const DONE = new Set();   /* 결과 사이트에 결과가 올라온 팀 id (fin
 const stOf = (e, now) => e.tbd ? 'tbd' : now < e.ms ? 'up' : DONE.has(e.id) ? 'done' : (now < e.ms + LIVE ? 'live' : (now < e.ms + DUR ? 'over' : 'done'));
 function elapsed(ms, now){
   const m = Math.max(0, Math.floor((now - ms) / 60000)), h = Math.floor(m / 60);
-  return (h ? h + '시간 ' + String(m % 60).padStart(2, '0') + '분' : m + '분') + ' 경과';
+  return h ? h + '시간 ' + String(m % 60).padStart(2, '0') + '분' : m + '분';
 }
 function until(diff){
   const m = Math.round(diff / 60000);
@@ -703,7 +706,7 @@ function renderResults(){
     const di = divs[e.w], on = inList.has(e.id);
     return '<div class="res ' + di.cls + '"><div class="rwhen"><b>' + (e.tbd ? '–' : e.t) + '</b><span>' + DAYS[e.d].d + ' ' + DAYS[e.d].k + '</span></div>' +
       '<div class="info"><div class="names">' + namesHtml(e, gymSel ? h : null) + '</div>' +
-      '<div class="meta"><span class="pill">' + esc(di.label) + '</span>' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '배번 ' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') + gymHtml(e) + '</div></div>' +
+      '<div class="meta"><span class="pill">' + esc(di.label) + '</span>' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '#' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') + gymHtml(e) + '</div></div>' +
       '<button class="addbtn' + (on ? ' on' : '') + '" data-add="' + e.id + '"' + (on ? ' disabled' : '') + '>' + (on ? '추가됨' : '추가') + '</button></div>';
   };
   const cap = gymSel ? 300 : 30, shown = main.slice(0, cap), cshown = cand.slice(0, 30);
@@ -777,13 +780,13 @@ function gymHtml(e){
 function teamHtml(x, e, clash, st, isNext){
   const di = divs[e.w];
   const chip = st === 'live' ? '<span class="chip live"><i></i>진행 중</span>'
-    : st === 'over' ? '<span class="chip over">' + elapsed(e.ms, Date.now()) + '</span>'
+    : st === 'over' ? '<span class="chip over">진행 중</span>'
     : st === 'done' ? '<span class="chip done">종료</span>'
     : isNext ? '<span class="chip next">다음</span>' : '';
   return '<div class="team ' + di.cls + '">' +
     '<div class="row1"><span class="pill">' + esc(di.label) + '</span>' + chip + '</div>' +
     '<div class="names">' + namesHtml(e, x.h) + '</div>' +
-    '<div class="meta">' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '배번 ' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
+    '<div class="meta">' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '#' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
     gymHtml(e) +
     (RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<span class="rec"><b>' + esc(recTime(RES[e.id][0])) + '</b>' + (RES[e.id][1] ? '전체 ' + RES[e.id][1] + '위' : '') + '</span>' : '') +
     (RESULTS.show && (st === 'over' || st === 'done') ? '<a class="reslink ' + (DONE.has(e.id) ? 'ok' : 'wait') + '" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">' + (DONE.has(e.id) ? '결과 확인' : st === 'done' ? '결과 미확인' : '결과 집계중') + '</a>' : '') +
@@ -799,8 +802,9 @@ function card(arr, clash, st, nextMs){
   const mixed = new Set(cs).size > 1;
   const bg = mixed ? ' style="background:linear-gradient(to bottom,' + cs.map((c, i) => 'color-mix(in srgb,' + c + ' 14%,var(--surface)) ' + (i * 100 / cs.length) + '% ' + ((i + 1) * 100 / cs.length) + '%').join(',') + ')"' : '';
   const done = arr.every(({e}) => st(e) === 'done');
+  const runSt = st(e0);
   return '<article class="card ' + cls + (done ? ' done' : '') + '">' +
-    '<div class="stub"' + bg + '>' + (e0.tbd ? (tbdRange(e0) ? '<b class="time tbd"><i>' + tbdRange(e0)[0] + '</i><i>~ ' + tbdRange(e0)[1] + '</i></b><span class="ampm">시간 미확인</span>' : '<b class="time tbd">미확인</b><span class="ampm">출발 시간 미확인</span>') : '<b class="time">' + e0.t + '</b><span class="ampm">' + ampm(e0.t) + '</span>') +
+    '<div class="stub"' + bg + '>' + (e0.tbd ? (tbdRange(e0) ? '<b class="time tbd"><i>' + tbdRange(e0)[0] + '</i><i>~ ' + tbdRange(e0)[1] + '</i></b><span class="ampm">시간 미확인</span>' : '<b class="time tbd">미확인</b><span class="ampm">출발 시간 미확인</span>') : '<b class="time">' + e0.t + '</b>' + (runSt === 'live' || runSt === 'over' ? '<span class="ampm run">' + elapsed(e0.ms, Date.now()) + ' 경과</span>' : '<span class="ampm">' + ampm(e0.t) + '</span>')) +
     (arr.length > 1 ? '<span class="cnt">' + arr.length + '팀</span>' : '') + '</div>' +
     '<div class="body">' + arr.map(({x, e}) => teamHtml(x, e, clash, st(e), e.ms === nextMs)).join('') + '</div></article>';
 }
@@ -899,10 +903,10 @@ const flap = t => t.split('').map(c => c === ':' ? '<span class="colon">:</span>
 function guideEx(){
   const di = divs[5], cls = di.cls || 'o';
   const gyms = '<span class="gyms"><span class="gym gX">' + GYM.X + '</span><span class="gym gF">' + GYM.F + '</span></span>';
-  const one = (chip, extra, done) => '<article class="card ' + cls + (done ? ' done' : '') + '"><div class="stub"><b class="time">09:20</b></div><div class="body"><div class="team ' + cls + '">' +
+  const one = (chip, extra, done, run) => '<article class="card ' + cls + (done ? ' done' : '') + '"><div class="stub"><b class="time">09:20</b>' + (run ? '<span class="ampm run">' + run + '</span>' : '') + '</div><div class="body"><div class="team ' + cls + '">' +
     '<div class="row1"><span class="pill">' + esc(di.label) + '</span>' + chip + '</div><div class="names"><span class="me">영구</span></div>' +
     '<div class="meta">' + extra + gyms + '</div></div></div></article>';
-  return one('<span class="chip live"><i></i>진행 중</span>', '') +
+  return one('<span class="chip live"><i></i>진행 중</span>', '', false, '25분 경과') +
     one('<span class="chip done">종료</span>', '<span class="rec"><b>1:20:36</b>전체 99위</span><span class="reslink ok">결과 확인</span>', true);
 }
 function renderNext(all, now){
@@ -933,7 +937,7 @@ function renderNext(all, now){
   const isOver = !isLive && !up.length;
   const pool = isLive ? live : up.length ? up.filter(({e}) => e.ms === up[0].e.ms) : over;
   const e0 = pool[0].e;
-  const cd = isLive || isOver ? '출발 ' + elapsed(e0.ms, now) : until(e0.ms - now);
+  const cd = isLive || isOver ? '출발 후 ' + elapsed(e0.ms, now) : until(e0.ms - now);
   const shownP = pool.slice(0, 3).map(({x, e}) => '<div class="wl"><b>' + esc(teamName(x, e)) + '</b><span>' + esc(divs[e.w].label) + '</span></div>').join('');
   el.innerHTML = '<div class="slab"><div class="stop"><span class="chip ' + (isLive ? 'live' : isOver ? 'over' : 'next') + '">' + (isLive ? '<i></i>진행 중' : isOver ? '곧 종료' : '다음 출발') + '</span>' +
     '<span class="cd">' + cd + '</span></div>' +
