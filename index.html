@@ -1110,6 +1110,7 @@ function syncQ(){
   sheet.classList.toggle('typing', has || !!gymSel);
   document.getElementById('qclear').hidden = !document.getElementById('q').value;
   renderResults();
+  document.getElementById('results').scrollTop = 0;   /* 검색어·소속 필터가 바뀌면 결과 맨 위로 */
 }
 document.getElementById('q').addEventListener('input', syncQ);
 document.getElementById('gymchips').addEventListener('click', ev => {
@@ -1119,7 +1120,7 @@ document.getElementById('gymchips').addEventListener('click', ev => {
   syncQ();
 });
 document.getElementById('qclear').onclick = () => { const q = document.getElementById('q'); q.value = ''; syncQ(); q.focus(); };
-document.getElementById('qdiv').addEventListener('change', renderResults);
+document.getElementById('qdiv').addEventListener('change', () => { renderResults(); document.getElementById('results').scrollTop = 0; });
 document.getElementById('v-time').onclick = () => { view = 'time'; setView(); };
 document.getElementById('v-div').onclick = () => { view = 'div'; setView(); };
 function setView(){
