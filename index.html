@@ -237,6 +237,8 @@ footer p{margin:0 0 8px}
 .rwhen span{font-size:12px;color:var(--mute)}
 .res .names{margin-top:0;font-size:16px}
 .res .meta{margin-top:6px}
+.res .chip{font-size:11px;padding:1px 8px}
+.rtime{font-family:var(--font-display);font-weight:800;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
 .addbtn{border:0;border-radius:999px;padding:9px 16px;font-weight:700;background:var(--ink);color:var(--bg)}
 .addbtn.on{background:var(--bg);color:var(--mute)}
 .recrow{flex:0 0 100%;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-top:2px}
@@ -655,7 +657,7 @@ function search(q, divIdx){
 }
 
 /* 코치님 목록: '코치'를 검색하면 아래 코치님이 출전하는 경기만 모아 보여줌 (소속 출전 명단과 겹치는 경기만) */
-const COACHES = {X:['정원준','공기환','정재민','도유권','장한별','김건우'], F:['남채연','오승진','진동규']};
+const COACHES = {X:['정원준','공기환','정재민','도유권','장한별','김건우','음수란'], F:['남채연','오승진','진동규']};
 const isCoachQ = q => /^코치(님|분|들)?$/.test(q.trim());
 /* 숨은 검색어: '영구' → 내 경기(일 08:50 이선영) */
 const isCheatQ = q => norm(q.trim()) === '영구';
@@ -735,7 +737,7 @@ function renderResults(){
     const di = divs[e.w], on = inList.has(e.id);
     return '<div class="res ' + di.cls + '"><div class="rwhen"><b>' + (e.tbd ? '–' : e.t) + '</b><span>' + DAYS[e.d].d + ' ' + DAYS[e.d].k + '</span></div>' +
       '<div class="info"><div class="names">' + namesHtml(e, gymSel || coachMode || isCheatQ(q) ? h : null) + '</div>' +
-      '<div class="meta"><span class="pill">' + esc(di.label) + '</span>' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '#' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') + gymHtml(e) + '</div></div>' +
+      '<div class="meta"><span class="pill">' + esc(di.label) + '</span>' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '#' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') + gymHtml(e) + (stOf(e, Date.now()) === 'done' ? '<span class="chip done">종료</span>' + (RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<b class="rtime">' + esc(recTime(RES[e.id][0])) + '</b>' : '') : '') + '</div></div>' +
       '<button class="addbtn' + (on ? ' on' : '') + '" data-add="' + e.id + '"' + (on ? ' disabled' : '') + '>' + (on ? '추가됨' : '추가') + '</button></div>';
   };
   const cap = gymSel ? 300 : 30, shown = main.slice(0, cap), cshown = cand.slice(0, 30);

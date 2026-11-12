@@ -1,0 +1,91 @@
+name: Pages (스타트리스트·실시간 결과 반영)
+
+# - main 에 푸시: 사이트 배포 + 스타트리스트 새로 받기
+# - 매일 07:00 (KST) 한 번: 스타트리스트 새로 받아 사이트에 반영 (대회 마지막 날까지)
+# - 대회 전날(11/12) 19:00 (KST) 한 번 더: 스타트리스트 새로 받기
+# - 대회 기간(11/13~11/15) 09:00~22:00 (KST) 5분마다: results.hyrox.com 에 결과가 올라온 팀을 finished.json 으로 만들어 배포
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 22 * * *'      # 매일 07:00 KST (UTC 22:00)
+    - cron: '0 10 12 11 *'    # 11/12 19:00 KST 한 번 (UTC 10:00)
+    - cron: '*/5 0-13 * * *'   # 09:00~22:55 KST 중 실제 실행은 아래에서 22:00 까지로 제한
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 실행 여부 확인
+        id: gate
+        env:
+          EVENT: ${{ github.event_name }}
+          CRON: ${{ github.event.schedule }}
+        run: |
+          kd=$(TZ=Asia/Seoul date +%Y%m%d)
+          km=$((10#$(TZ=Asia/Seoul date +%H) * 60 + 10#$(TZ=Asia/Seoul date +%M)))
+          run=true; refresh=false
+          if [ "$EVENT" != "schedule" ]; then
+            refresh=true                                            # 푸시, 수동 실행은 항상
+          elif [ "$CRON" = "0 22 * * *" ]; then
+            refresh=true                                            # 매일 07:00 스타트리스트 갱신: 대회 마지막 날까지
+            [ "$kd" -gt 20261115 ] && run=false
+          elif [ "$CRON" = "0 10 12 11 *" ]; then
+            refresh=true                                            # 대회 전날 19:00 한 번
+            [ "$kd" != 20261112 ] && run=false
+          else                                                      # 5분마다: 대회 기간 09:00~22:00 (KST) 에만
+            if [ "$kd" -lt 20261113 ] || [ "$kd" -gt 20261115 ] || [ "$km" -lt 540 ] || [ "$km" -gt 1320 ]; then run=false; fi
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+          echo "refresh=$refresh" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'true'
+
+      - name: 스타트리스트 (새로 받기, 실패하면 직전에 배포된 것 사용)
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          [ -d img ] && cp -r img _site/ || true
+          if [ "${{ steps.gate.outputs.refresh }}" = "true" ] && python3 scripts/fetch_startlist.py index.html > startlist.json; then
+            echo "새로 받았어요"
+          else
+            rm -f startlist.json
+            echo "직전 배포본을 가져옵니다"
+            curl -fsS --max-time 60 "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/startlist.json" -o startlist.json || rm -f startlist.json
+          fi
+          if [ -s startlist.json ] && python3 scripts/apply_startlist.py _site/index.html startlist.json; then
+            cp startlist.json _site/startlist.json
+          else
+            echo "저장소의 index.html 데이터를 그대로 사용합니다"
+          fi
+
+      - name: 결과 확인
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          python3 scripts/fetch_results.py _site/index.html > _site/finished.json || echo '{"done":[]}' > _site/finished.json
+          cat _site/finished.json
+
+      - uses: actions/configure-pages@v5
+        if: steps.gate.outputs.run == 'true'
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.gate.outputs.run == 'true'
+        with:
+          path: _site
+      - id: deployment
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/deploy-pages@v4
