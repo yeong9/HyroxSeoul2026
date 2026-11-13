@@ -57,7 +57,7 @@ def strip(s):
 
 
 def parse_rows(page):
-    """[(이름 목록, 연령대, 기록, 순위, 상세 id)] — 기록이 없는 줄은 건너뜀"""
+    """[(이름 목록, 연령대, 기록, 순위, 상세 id, 연령대 순위)] — 기록이 없는 줄은 건너뜀"""
     out = []
     for blk in re.findall(r'<li class="[^"]*list-group-item row[^"]*">(.*?)</li>', page, re.S):
         m = re.search(r'<h4[^>]*class="[^"]*list-field[^"]*"[^>]*>(.*?)</h4>', blk, re.S)
@@ -83,8 +83,9 @@ def parse_rows(page):
         if not t:
             continue
         rk = re.search(r'type-place place-primary[^>]*>\s*(\d+)\s*<', blk)
+        ag = re.search(r'type-place place-secondary[^>]*>\s*(\d+)\s*<', blk)
         ip = re.search(r'idp=([A-Za-z0-9]+)', blk)
-        out.append((names, strip(a.group(1)) if a else '', t.group(1), int(rk.group(1)) if rk else 0, ip.group(1) if ip else ''))
+        out.append((names, strip(a.group(1)) if a else '', t.group(1), int(rk.group(1)) if rk else 0, ip.group(1) if ip else '', int(ag.group(1)) if ag else 0))
     return out
 
 
@@ -307,12 +308,12 @@ def main():
                 errors += 1
                 print(f'warn: {pre} day{d}: {e}', file=sys.stderr)
                 continue
-            for names, age, total, rank, idp in rows:
+            for names, age, total, rank, idp, agrank in rows:
                 res = {norm(n) for n in names}
                 for tid, a, ppl in cands:
                     if ppl and ppl <= res and (not a or not age or a == age):
                         done.add(tid)
-                        recs[tid] = [total, rank, idp]
+                        recs[tid] = [total, rank, idp, agrank]
     prev = load_prev(sys.argv[2]) if len(sys.argv) > 2 else {}
     fin = {k: v for k, v in (prev.get('fin') or {}).items() if k not in done}
     idps = dict(prev.get('idp') or {})

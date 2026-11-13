@@ -250,18 +250,21 @@ footer p{margin:0 0 8px}
 .slab.islive .flaps{margin-top:2px;font-size:clamp(30px,10vw,44px);color:var(--slab-mute);gap:4px}
 .slab.islive .fl{background:rgba(255,255,255,.05)}
 .slab.islive .sday{margin-top:10px}
-.slab.islive .wholist{margin-top:12px;gap:14px}
+.slab.islive .wholist{margin-top:12px;gap:16px}
 .wl.lv{flex-direction:column;gap:6px;align-items:stretch}
-.wl.lv .wt{display:flex;gap:10px;align-items:baseline}
-.slink{margin-left:auto;white-space:nowrap;font-size:13px;font-weight:700;color:var(--amber);text-decoration:none;border-bottom:1.5px solid var(--amber);align-self:center}
-.sseg{display:flex;align-items:center;gap:9px;font-size:24px;font-weight:800;line-height:1.1;color:var(--slab-ink);letter-spacing:-.01em}
+.wl.lv .wt{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.wl.lv .wt b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wl.lv .wd{color:var(--slab-mute);font-size:13px;margin-top:-3px}
+.slink{margin-left:auto;flex:none;white-space:nowrap;font-size:12.5px;font-weight:700;color:var(--amber);text-decoration:none;border-bottom:1.5px solid var(--amber);align-self:center}
+.sseg{display:flex;align-items:center;gap:9px;margin-top:2px;font-size:22px;font-weight:800;line-height:1.1;color:var(--slab-ink);letter-spacing:-.01em}
 .sseg::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;background:var(--amber);animation:pulse 1.4s ease-in-out infinite}
 .sseg small{font-size:13px;font-weight:600;color:var(--slab-mute);margin-left:auto;letter-spacing:0}
 .sbar{display:flex;gap:3px}
 .sbar i{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.14)}
 .sbar i.on{background:var(--amber)}
 .recrow{flex:0 0 100%;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-top:2px}
-.rec{display:inline-flex;align-items:baseline;gap:7px;font-size:11px;color:var(--mute)}
+.rec{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:6px 7px;max-width:100%;font-size:11px;color:var(--mute)}
+.rk{display:inline-block;white-space:nowrap;padding:1px 8px;border-radius:999px;background:var(--amber);color:#2a1a00;font-size:12px;font-weight:700;line-height:1.5}
 .rec b{font-family:var(--font-display);font-weight:800;font-size:22px;line-height:1;letter-spacing:-.01em;color:var(--ink);font-variant-numeric:tabular-nums}
 .nowbtn{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;border:0;border-radius:999px;padding:10px 18px;background:var(--slab);color:var(--slab-ink);font-weight:700;font-size:14px;box-shadow:0 8px 20px -8px rgba(0,0,0,.5);white-space:nowrap}
 .nowbtn[hidden]{display:none}
@@ -850,6 +853,11 @@ function resultUrl(x, e){
     '&search%5Bname%5D=' + encodeURIComponent(last) + (first ? '&search%5Bfirstname%5D=' + encodeURIComponent(first) : '');
 }
 const recTime = t => t.replace(/^0(\d:)/, '$1');
+/* 순위: 전체는 늘 보여주고, 5위 안이면 강조. 연령대 순위는 5위 안일 때만 */
+function rankHtml(r){
+  const a = r[1], g = r[3];
+  return (a ? (a <= 5 ? '<span class="rk">전체 ' + a + '위</span>' : '전체 ' + a + '위') : '') + (g && g <= 5 ? '<span class="rk">연령대 ' + g + '위</span>' : '');
+}
 /* 결과가 올라온 팀은 그 팀의 상세 결과 페이지로, 아니면 이름 검색 결과로 */
 function resultLink(x, e){
   const r = RES[e.id];
@@ -873,7 +881,7 @@ function teamHtml(x, e, clash, st, isNext){
     '<div class="names">' + namesHtml(e, x.h) + '</div>' + segHtml(e, st) +
     '<div class="meta">' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '#' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
     gymHtml(e) +
-    ((r, l) => r || l ? '<div class="recrow">' + r + l + '</div>' : '')((RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<span class="rec"><b>' + esc(recTime(RES[e.id][0])) + '</b>' + (RES[e.id][1] ? '전체 ' + RES[e.id][1] + '위' : '') + '</span>' : RESULTS.show && !DONE.has(e.id) && FIN[e.id] ? '<span class="rec"><b>' + esc(recTime(FIN[e.id])) + '</b></span>' : ''),
+    ((r, l) => r || l ? '<div class="recrow">' + r + l + '</div>' : '')((RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<span class="rec"><b>' + esc(recTime(RES[e.id][0])) + '</b>' + rankHtml(RES[e.id]) + '</span>' : RESULTS.show && !DONE.has(e.id) && FIN[e.id] ? '<span class="rec"><b>' + esc(recTime(FIN[e.id])) + '</b></span>' : ''),
       (RESULTS.show && (st === 'over' || st === 'done' || (st === 'live' && IDP[e.id])) ? '<a class="reslink ' + (DONE.has(e.id) || IDP[e.id] ? 'ok' : 'wait') + '" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">' + (DONE.has(e.id) || IDP[e.id] ? '결과 확인' : st === 'done' ? '결과 미확인' : '결과 집계중') + '</a>' : '')) +
     (clash > 1 && st !== 'done' ? '<span class="clash">같은 시간 ' + clash + '팀 출발</span>' : '') + '</div>' +
     '<button class="x-btn" data-del="' + e.id + '" aria-label="목록에서 삭제"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
@@ -1023,7 +1031,14 @@ function renderNext(all, now){
   const pool = isLive ? live : up.length ? up.filter(({e}) => e.ms === up[0].e.ms) : over;
   const e0 = pool[0].e;
   const cd = isLive ? (pool.length > 1 ? pool.length + '팀' : '출발 후 ' + elapsed(e0.ms, now)) : isOver ? '출발 후 ' + elapsed(e0.ms, now) : until(e0.ms - now);
-  const shownP = pool.slice(0, 3).map(({x, e}) => (function(){ const sg = slabSegHtml(e, isLive ? 'live' : isOver ? 'over' : 'up'); const h = '<b>' + esc(teamName(x, e)) + '</b><span>' + esc(divs[e.w].label) + (isLive ? ' · ' + e.t + ' 출발' : '') + '</span>'; const lk = isLive && IDP[e.id] && RESULTS.show ? '<a class="slink" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">실시간 상세보기</a>' : ''; return sg ? '<div class="wl lv"><div class="wt">' + h + lk + '</div>' + sg + '</div>' : '<div class="wl">' + h + lk + '</div>'; })()).join('');
+  const shownP = pool.slice(0, 3).map(({x, e}) => (function(){
+      const sg = slabSegHtml(e, isLive ? 'live' : isOver ? 'over' : 'up');
+      const nm = '<b>' + esc(teamName(x, e)) + '</b>';
+      const sub = esc(divs[e.w].label) + (isLive ? ' · ' + e.t + ' 출발' : '');
+      const lk = isLive && IDP[e.id] && RESULTS.show ? '<a class="slink" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">실시간 상세보기</a>' : '';
+      return sg ? '<div class="wl lv"><div class="wt">' + nm + lk + '</div><div class="wd">' + sub + '</div>' + sg + '</div>'
+        : '<div class="wl">' + nm + '<span>' + sub + '</span>' + lk + '</div>';
+    })()).join('');
   el.innerHTML = '<div class="slab' + (isLive ? ' islive' : '') + '"><div class="stop"><span class="chip ' + (isLive ? 'live' : isOver ? 'over' : 'next') + '">' + (isLive ? '<i></i>진행 중' : isOver ? '곧 종료' : '다음 출발') + '</span>' +
     '<span class="cd">' + cd + '</span></div>' +
     '<div class="sday">' + DAYS[e0.d].d + '(' + DAYS[e0.d].k + ')</div>' +
