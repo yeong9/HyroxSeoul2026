@@ -497,6 +497,7 @@ const startMs = (d, t) => Date.UTC(2026, 10, 13 + d, +t.slice(0,2) - 9, +t.slice
 const sortT = e => e.tbd ? '99:99' : e.t;
 const RES = {};    /* 결과: id -> [기록, 순위, 상세 id] (finished.json) */
 const LIVESEG = {};   /* 진행 중 구간: id -> [끝낸 구간 수 0~16, 누적 초] (finished.json, 소속 출전 명단·기본 목록 팀만) */
+const FIN = {};   /* 순위 목록엔 아직 없지만 상세 페이지에 최종 기록이 올라온 팀: id -> 'HH:MM:SS' */
 let LIVE_AT = 0;   /* finished.json 이 만들어진 시각(ms) */
 const SEG_KO = ['러닝 1','스키에르그','러닝 2','슬레드 푸시','러닝 3','슬레드 풀','러닝 4','버피 브로드 점프','러닝 5','로잉','러닝 6','파머스 캐리','러닝 7','샌드백 런지','러닝 8','월볼'];
 function segHtml(e, st){
@@ -514,7 +515,19 @@ function slabSegHtml(e, st){
   return '<div class="sseg">' + (n >= 16 ? '월볼 완료 · 결과 집계중' : esc(SEG_KO[n]) + '<small>' + n + '/16</small>') + '</div><div class="sbar" aria-hidden="true">' + bar + '</div>';
 }
 const DONE = new Set();   /* 결과 사이트에 결과가 올라온 팀 id (finished.json) */
-const stOf = (e, now) => e.tbd ? 'tbd' : now < e.ms ? 'up' : DONE.has(e.id) ? 'done' : (now < e.ms + LIVE ? 'live' : (now < e.ms + DUR ? 'over' : 'done'));
+const STRETCH = 3 * 60 * 60000;   /* 리더보드에서 아직 뛰는 게 확인되면 1시간이 지나도 '진행 중'으로 계속 보여줌(최대 3시간) */
+function liveN(e){
+  const v = LIVESEG[e.id];
+  return v && Date.now() - LIVE_AT <= 20 * 60000 ? v[0] : -1;
+}
+const stOf = (e, now) => {
+  if (e.tbd) return 'tbd';
+  if (now < e.ms) return 'up';
+  if (DONE.has(e.id) || FIN[e.id]) return 'done';
+  const n = liveN(e);
+  if (n >= 0 && now < e.ms + STRETCH) return n >= 16 ? 'over' : 'live';
+  return now < e.ms + LIVE ? 'live' : (now < e.ms + DUR ? 'over' : 'done');
+};
 function elapsed(ms, now){
   const m = Math.max(0, Math.floor((now - ms) / 60000)), h = Math.floor(m / 60);
   return h ? h + '시간 ' + String(m % 60).padStart(2, '0') + '분' : m + '분';
@@ -772,7 +785,7 @@ function renderResults(){
     const di = divs[e.w], on = inList.has(e.id);
     return '<div class="res ' + di.cls + '"><div class="rwhen"><b>' + (e.tbd ? '–' : e.t) + '</b><span>' + DAYS[e.d].d + ' ' + DAYS[e.d].k + '</span></div>' +
       '<div class="info"><div class="names">' + namesHtml(e, gymSel || coachMode || isCheatQ(q) ? h : null) + '</div>' +
-      '<div class="meta"><span class="pill">' + esc(di.label) + '</span>' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '#' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') + gymHtml(e) + (stOf(e, Date.now()) === 'done' ? '<span class="chip done">종료</span>' + (RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<b class="rtime">' + esc(recTime(RES[e.id][0])) + '</b>' : '') : '') + '</div></div>' +
+      '<div class="meta"><span class="pill">' + esc(di.label) + '</span>' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '#' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') + gymHtml(e) + (stOf(e, Date.now()) === 'done' ? '<span class="chip done">종료</span>' + (RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<b class="rtime">' + esc(recTime(RES[e.id][0])) + '</b>' : RESULTS.show && FIN[e.id] ? '<b class="rtime">' + esc(recTime(FIN[e.id])) + '</b>' : '') : '') + '</div></div>' +
       '<button class="addbtn' + (on ? ' on' : '') + '" data-add="' + e.id + '"' + (on ? ' disabled' : '') + '>' + (on ? '추가됨' : '추가') + '</button></div>';
   };
   const cap = gymSel ? 300 : 30, shown = main.slice(0, cap), cshown = cand.slice(0, 30);
@@ -854,8 +867,8 @@ function teamHtml(x, e, clash, st, isNext){
     '<div class="names">' + namesHtml(e, x.h) + '</div>' + segHtml(e, st) +
     '<div class="meta">' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '#' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
     gymHtml(e) +
-    ((r, l) => r || l ? '<div class="recrow">' + r + l + '</div>' : '')((RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<span class="rec"><b>' + esc(recTime(RES[e.id][0])) + '</b>' + (RES[e.id][1] ? '전체 ' + RES[e.id][1] + '위' : '') + '</span>' : ''),
-      (RESULTS.show && (st === 'over' || st === 'done') ? '<a class="reslink ' + (DONE.has(e.id) ? 'ok' : 'wait') + '" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">' + (DONE.has(e.id) ? '결과 확인' : st === 'done' ? '결과 미확인' : '결과 집계중') + '</a>' : '')) +
+    ((r, l) => r || l ? '<div class="recrow">' + r + l + '</div>' : '')((RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<span class="rec"><b>' + esc(recTime(RES[e.id][0])) + '</b>' + (RES[e.id][1] ? '전체 ' + RES[e.id][1] + '위' : '') + '</span>' : RESULTS.show && !DONE.has(e.id) && FIN[e.id] ? '<span class="rec"><b>' + esc(recTime(FIN[e.id])) + '</b>잠정</span>' : ''),
+      (RESULTS.show && (st === 'over' || st === 'done') ? '<a class="reslink ' + (DONE.has(e.id) ? 'ok' : 'wait') + '" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">' + (DONE.has(e.id) ? '결과 확인' : FIN[e.id] ? '결과 집계중' : st === 'done' ? '결과 미확인' : '결과 집계중') + '</a>' : '')) +
     (clash > 1 && st !== 'done' ? '<span class="clash">같은 시간 ' + clash + '팀 출발</span>' : '') + '</div>' +
     '<button class="x-btn" data-del="' + e.id + '" aria-label="목록에서 삭제"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
 }
@@ -1274,12 +1287,13 @@ window.addEventListener('resize', updateNow);
   /* 결과가 올라온 경기는 시간과 상관없이 종료로 표시 (GitHub Actions가 5분마다 finished.json을 갱신) */
   const loadDone = () => fetch('finished.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
     if (!j || !Array.isArray(j.done)) return;
-    const before = DONE.size + '|' + JSON.stringify(RES) + '|' + JSON.stringify(LIVESEG);
+    const before = DONE.size + '|' + JSON.stringify(RES) + '|' + JSON.stringify(LIVESEG) + '|' + JSON.stringify(FIN);
     DONE.clear(); j.done.forEach(id => DONE.add(id));
     Object.keys(RES).forEach(k => delete RES[k]); Object.assign(RES, j.res || {});
     Object.keys(LIVESEG).forEach(k => delete LIVESEG[k]); Object.assign(LIVESEG, j.live || {});
+    Object.keys(FIN).forEach(k => delete FIN[k]); Object.assign(FIN, j.fin || {});
     LIVE_AT = j.updated ? Date.parse(j.updated) || 0 : 0;
-    if (DONE.size + '|' + JSON.stringify(RES) + '|' + JSON.stringify(LIVESEG) !== before) renderBoard();
+    if (DONE.size + '|' + JSON.stringify(RES) + '|' + JSON.stringify(LIVESEG) + '|' + JSON.stringify(FIN) !== before) renderBoard();
   }).catch(() => {});
   if (typeof fetch === 'function'){ loadDone(); setInterval(loadDone, 60000); }
 })();

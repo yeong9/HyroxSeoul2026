@@ -128,6 +128,12 @@ def parse_splits(page):
     return n, cum
 
 
+def parse_finish(page):
+    """상세 페이지의 '최종 기록(Overall Time)'. 아직 안 들어왔으면 ''"""
+    m = re.search(r'<td[^>]*f-time_finish_netto[^>]*>\s*(\d+:\d\d:\d\d)\s*</td>', page)
+    return m.group(1) if m else ''
+
+
 def lookup_idp(bib, event):
     """배번 → 상세 id (대회 리더보드 검색 JSON). 못 찾으면 ''"""
     q = {'content': 'ajax2', 'onpage': 'leaderboard', 'func': 'getSearchResult',
@@ -145,8 +151,9 @@ def fetch_live(tid, bib, event):
         if not idp:
             return tid, None
         q = {'content': 'detail', 'fpid': 'search', 'pid': 'search', 'idp': idp, 'lang': 'EN_CAP', 'event': event}
-        n, cum = parse_splits(fetch(BASE + '?' + urllib.parse.urlencode(q), tries=2))
-        return tid, [n, cum]
+        page = fetch(BASE + '?' + urllib.parse.urlencode(q), tries=2)
+        n, cum = parse_splits(page)
+        return tid, [n, cum, parse_finish(page)]
     except Exception as e:  # noqa: BLE001
         print(f'warn: live {tid}: {e}', file=sys.stderr)
         return tid, None
@@ -239,17 +246,19 @@ def main():
                     if ppl and ppl <= res and (not a or not age or a == age):
                         done.add(tid)
                         recs[tid] = [total, rank, idp]
-    live = {}
+    live, fin = {}, {}
     try:
         cands = live_candidates(data, done, datetime.now(KST), load_watch(sys.argv[1] if len(sys.argv) > 1 else 'index.html'), load_flow(sys.argv[1] if len(sys.argv) > 1 else 'index.html'))[:120]
         with ThreadPoolExecutor(max_workers=6) as ex:
             for tid, v in ex.map(lambda c: fetch_live(*c), cands):
                 if v is not None:
-                    live[tid] = v
+                    live[tid] = v[:2]
+                    if v[2]:
+                        fin[tid] = v[2]   # 순위 목록에 아직 안 올라왔어도 상세 페이지에 최종 기록이 있으면 임시로 보여줌
     except Exception as e:  # noqa: BLE001
         print(f'warn: live: {e}', file=sys.stderr)
     json.dump({'updated': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-               'errors': errors, 'done': sorted(done), 'res': recs, 'live': live}, sys.stdout, ensure_ascii=False)
+               'errors': errors, 'done': sorted(done), 'res': recs, 'live': live, 'fin': fin}, sys.stdout, ensure_ascii=False)
 
 
 if __name__ == '__main__':
