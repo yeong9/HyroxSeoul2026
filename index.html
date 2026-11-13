@@ -503,23 +503,26 @@ let LIVE_AT = 0;   /* finished.json 이 만들어진 시각(ms) */
 const SEG_KO = ['러닝 1','스키에르그','러닝 2','슬레드 푸시','러닝 3','슬레드 풀','러닝 4','버피 브로드 점프','러닝 5','로잉','러닝 6','파머스 캐리','러닝 7','샌드백 런지','러닝 8','월볼'];
 function segHtml(e, st){
   const v = LIVESEG[e.id];
-  if (!v || DONE.has(e.id) || (st !== 'live' && st !== 'over') || Date.now() - LIVE_AT > 20 * 60000) return '';
+  if (!v || DONE.has(e.id) || (st !== 'live' && st !== 'over') || !liveFresh(v)) return '';
   const n = v[0];
   let bar = ''; for (let i = 0; i < 16; i++) bar += '<i' + (i < n ? ' class="on"' : '') + '></i>';
   return '<div class="nowseg">' + (n >= 16 ? '<b>월볼</b> 완료 · 결과 집계중' : '<b>' + SEG_KO[n] + '</b>') + '<span class="segbar" aria-hidden="true">' + bar + '</span></div>';
 }
 function slabSegHtml(e, st){
   const v = LIVESEG[e.id];
-  if (!v || DONE.has(e.id) || (st !== 'live' && st !== 'over') || Date.now() - LIVE_AT > 20 * 60000) return '';
+  if (!v || DONE.has(e.id) || (st !== 'live' && st !== 'over') || !liveFresh(v)) return '';
   const n = v[0];
   let bar = ''; for (let i = 0; i < 16; i++) bar += '<i' + (i < n ? ' class="on"' : '') + '></i>';
   return '<div class="sseg">' + (n >= 16 ? '월볼 완료 · 결과 집계중' : esc(SEG_KO[n]) + '<small>' + n + '/16</small>') + '</div><div class="sbar" aria-hidden="true">' + bar + '</div>';
 }
 const DONE = new Set();   /* 결과 사이트에 결과가 올라온 팀 id (finished.json) */
 const STRETCH = 3 * 60 * 60000;   /* 리더보드에서 아직 뛰는 게 확인되면 1시간이 지나도 '진행 중'으로 계속 보여줌(최대 3시간) */
+function liveFresh(v){   /* 팀마다 확인한 시각(v[2], 분 단위)이 있으면 그걸로, 없으면 finished.json 이 만들어진 시각으로 */
+  return Date.now() - (v[2] ? v[2] * 60000 : LIVE_AT) <= 20 * 60000;
+}
 function liveN(e){
   const v = LIVESEG[e.id];
-  return v && Date.now() - LIVE_AT <= 20 * 60000 ? v[0] : -1;
+  return v && liveFresh(v) ? v[0] : -1;
 }
 const stOf = (e, now) => {
   if (e.tbd) return 'tbd';
@@ -1018,12 +1021,12 @@ function renderNext(all, now){
   const isOver = !isLive && !up.length;
   const pool = isLive ? live : up.length ? up.filter(({e}) => e.ms === up[0].e.ms) : over;
   const e0 = pool[0].e;
-  const cd = isLive || isOver ? '출발 후 ' + elapsed(e0.ms, now) : until(e0.ms - now);
-  const shownP = pool.slice(0, 3).map(({x, e}) => (function(){ const sg = slabSegHtml(e, isLive ? 'live' : isOver ? 'over' : 'up'); const h = '<b>' + esc(teamName(x, e)) + '</b><span>' + esc(divs[e.w].label) + '</span>'; return sg ? '<div class="wl lv"><div class="wt">' + h + '</div>' + sg + '</div>' : '<div class="wl">' + h + '</div>'; })()).join('');
+  const cd = isLive ? (pool.length > 1 ? pool.length + '팀' : '출발 후 ' + elapsed(e0.ms, now)) : isOver ? '출발 후 ' + elapsed(e0.ms, now) : until(e0.ms - now);
+  const shownP = pool.slice(0, 3).map(({x, e}) => (function(){ const sg = slabSegHtml(e, isLive ? 'live' : isOver ? 'over' : 'up'); const h = '<b>' + esc(teamName(x, e)) + '</b><span>' + esc(divs[e.w].label) + (isLive ? ' · ' + e.t + ' 출발' : '') + '</span>'; return sg ? '<div class="wl lv"><div class="wt">' + h + '</div>' + sg + '</div>' : '<div class="wl">' + h + '</div>'; })()).join('');
   el.innerHTML = '<div class="slab' + (isLive ? ' islive' : '') + '"><div class="stop"><span class="chip ' + (isLive ? 'live' : isOver ? 'over' : 'next') + '">' + (isLive ? '<i></i>진행 중' : isOver ? '곧 종료' : '다음 출발') + '</span>' +
     '<span class="cd">' + cd + '</span></div>' +
     '<div class="sday">' + DAYS[e0.d].d + '(' + DAYS[e0.d].k + ')</div>' +
-    '<div class="flaps" aria-label="' + e0.t + '">' + flap(e0.t) + '</div>' +
+    (isLive ? '' : '<div class="flaps" aria-label="' + e0.t + '">' + flap(e0.t) + '</div>') +
     '<div class="wholist">' + shownP + (pool.length > 3 ? '<div class="wl"><span>외 ' + (pool.length - 3) + '팀</span></div>' : '') + '</div></div>';
 }
 function groupHtml(g, now){

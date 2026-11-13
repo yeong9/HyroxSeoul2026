@@ -215,13 +215,13 @@ def live_candidates(data, done, now, watch=None, flow=None):
     return out
 
 
-SWEEP_AFTER = 40   # 출발 후 이 시간(분)이 지난 팀부터 완주 기록을 확인 (그 전엔 완주할 수 없음)
-SWEEP_N = 250      # 한 번에 확인하는 일반 팀 수 상한 (오래 안 확인한 팀부터. 처음 쌓인 팀은 몇 번에 나눠 처리)
+SWEEP_AFTER = 5    # 출발 후 이 시간(분)이 지난 팀부터 진행 구간·완주 기록을 확인
+SWEEP_N = 350      # 한 번에 확인하는 일반 팀 수 상한 (오래 안 확인한 팀부터. 처음 쌓인 팀은 몇 번에 나눠 처리)
 
 
 def recheck_gap(n):
-    """끝낸 구간 수에 따라 다시 확인할 때까지 쉬는 시간(분). 아직 멀었으면 자주 볼 필요가 없어요"""
-    return 3 if n >= 12 else 6 if n >= 6 else 12
+    """끝낸 구간 수에 따라 다시 확인할 때까지 쉬는 시간(분)"""
+    return 3 if n >= 12 else 5
 
 
 def sweep_candidates(data, done, now, flow, skip, chk, nowm=0):
@@ -291,7 +291,7 @@ def main():
     fin = {k: v for k, v in (prev.get('fin') or {}).items() if k not in done}
     idps = dict(prev.get('idp') or {})
     chk = dict(prev.get('chk') or {})
-    live = {}
+    live = {k: v for k, v in (prev.get('live') or {}).items() if len(v) > 2 and k not in fin and k not in done and int(datetime.now(KST).timestamp() // 60) - v[2] <= 25}
     src = sys.argv[1] if len(sys.argv) > 1 else 'index.html'
     now = datetime.now(KST)
     nowm = int(now.timestamp() // 60)
@@ -307,8 +307,10 @@ def main():
                     continue
                 chk[tid] = [nowm, v[0]]
                 idps[tid] = v[3]   # 상세 페이지 id: 순위가 아직 없어도 기록 페이지로 바로 연결
-                if tid in wt:
-                    live[tid] = v[:2]
+                if tid not in fin and not v[2]:
+                    live[tid] = [v[0], v[1], nowm]   # 팀별 확인 시각(분)도 같이 남겨서 오래된 정보는 화면에서 숨김
+                else:
+                    live.pop(tid, None)
                 if v[2]:
                     fin[tid] = v[2]   # 순위 목록에 아직 안 올라왔어도 상세 페이지에 최종 기록이 있으면 임시로 보여줌
     except Exception as e:  # noqa: BLE001
