@@ -145,9 +145,9 @@ def lookup_idp(bib, event):
     return ''
 
 
-def fetch_live(tid, bib, event):
+def fetch_live(tid, bib, event, idp=''):
     try:
-        idp = lookup_idp(bib, event)
+        idp = idp or lookup_idp(bib, event)
         if not idp:
             return tid, None
         q = {'content': 'detail', 'fpid': 'search', 'pid': 'search', 'idp': idp, 'lang': 'EN_CAP', 'event': event}
@@ -215,6 +215,47 @@ def live_candidates(data, done, now, watch=None, flow=None):
     return out
 
 
+SWEEP_AFTER = 40   # 출발 후 이 시간(분)이 지난 팀부터 완주 기록을 확인 (그 전엔 완주할 수 없음)
+SWEEP_N = 250      # 한 번에 확인하는 일반 팀 수 상한 (오래 안 확인한 팀부터. 처음 쌓인 팀은 몇 번에 나눠 처리)
+
+
+def recheck_gap(n):
+    """끝낸 구간 수에 따라 다시 확인할 때까지 쉬는 시간(분). 아직 멀었으면 자주 볼 필요가 없어요"""
+    return 3 if n >= 12 else 6 if n >= 6 else 12
+
+
+def sweep_candidates(data, done, now, flow, skip, chk, nowm=0):
+    """조회 대상(소속·기본 목록) 밖 팀 중 완주했을 만한 팀. 순위가 늦게 나와서, 상세 페이지의 최종 기록을 직접 확인"""
+    waves = data['waves']
+    out = []
+    for d, t, bib, w, _age, _ppl in data['rows']:
+        tid = f'{d}-{bib}'
+        if tid in done or tid in skip or not re.fullmatch(r'\d{1,2}:\d\d', t or '') or not re.fullmatch(r'\d+', str(bib)):
+            continue
+        hh, mm = (int(x) for x in t.split(':'))
+        day0 = datetime(DAY0[0], DAY0[1], DAY0[2] + d, 0, 0, tzinfo=KST)
+        start = day0 + timedelta(hours=hh, minutes=mm)
+        end = start + timedelta(minutes=LIVE_AFTER)
+        for names, _a, b in (flow or {}).get(d, []):
+            if waves[w] in names:
+                end = day0 + timedelta(minutes=b + LIVE_END_PAD)
+                break
+        c = chk.get(tid)
+        last, n = (c if isinstance(c, list) else [c or 0, 0])
+        if start + timedelta(minutes=SWEEP_AFTER) <= now <= end and nowm - last >= recheck_gap(n):
+            out.append((last, tid, str(bib), f'{prefix(waves[w])}_{SUFFIX[d]}'))
+    out.sort()
+    return [(tid, bib, ev) for _c, tid, bib, ev in out[:SWEEP_N]]
+
+
+def load_prev(path):
+    try:
+        j = json.load(open(path, encoding='utf-8'))
+        return j if isinstance(j, dict) else {}
+    except Exception:  # noqa: BLE001
+        return {}
+
+
 def load_data(path):
     s = open(path, encoding='utf-8').read()
     m = re.search(r'const DATA = (\{.*?\});\n', s, re.S)
@@ -246,20 +287,34 @@ def main():
                     if ppl and ppl <= res and (not a or not age or a == age):
                         done.add(tid)
                         recs[tid] = [total, rank, idp]
-    live, fin, idps = {}, {}, {}
+    prev = load_prev(sys.argv[2]) if len(sys.argv) > 2 else {}
+    fin = {k: v for k, v in (prev.get('fin') or {}).items() if k not in done}
+    idps = dict(prev.get('idp') or {})
+    chk = dict(prev.get('chk') or {})
+    live = {}
+    src = sys.argv[1] if len(sys.argv) > 1 else 'index.html'
+    now = datetime.now(KST)
+    nowm = int(now.timestamp() // 60)
     try:
-        cands = live_candidates(data, done, datetime.now(KST), load_watch(sys.argv[1] if len(sys.argv) > 1 else 'index.html'), load_flow(sys.argv[1] if len(sys.argv) > 1 else 'index.html'))[:120]
+        flow = load_flow(src)
+        watch = load_watch(src)
+        cands = [(t, b, e, idps.get(t, '')) for t, b, e in live_candidates(data, done, now, watch, flow)[:120]]
+        wt = {c[0] for c in cands}
+        sweep = [(t, b, e, idps.get(t, '')) for t, b, e in sweep_candidates(data, done, now, flow, set(fin) | wt, chk, nowm) if t not in watch]
         with ThreadPoolExecutor(max_workers=6) as ex:
-            for tid, v in ex.map(lambda c: fetch_live(*c), cands):
-                if v is not None:
+            for (tid, *_r), (_t, v) in zip(cands + sweep, ex.map(lambda c: fetch_live(*c), cands + sweep)):
+                if v is None:
+                    continue
+                chk[tid] = [nowm, v[0]]
+                idps[tid] = v[3]   # 상세 페이지 id: 순위가 아직 없어도 기록 페이지로 바로 연결
+                if tid in wt:
                     live[tid] = v[:2]
-                    idps[tid] = v[3]   # 상세 페이지 id: 순위가 아직 없어도 기록 페이지로 바로 연결
-                    if v[2]:
-                        fin[tid] = v[2]   # 순위 목록에 아직 안 올라왔어도 상세 페이지에 최종 기록이 있으면 임시로 보여줌
+                if v[2]:
+                    fin[tid] = v[2]   # 순위 목록에 아직 안 올라왔어도 상세 페이지에 최종 기록이 있으면 임시로 보여줌
     except Exception as e:  # noqa: BLE001
         print(f'warn: live: {e}', file=sys.stderr)
     json.dump({'updated': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-               'errors': errors, 'done': sorted(done), 'res': recs, 'live': live, 'fin': fin, 'idp': idps}, sys.stdout, ensure_ascii=False)
+               'errors': errors, 'done': sorted(done), 'res': recs, 'live': live, 'fin': fin, 'idp': idps, 'chk': chk}, sys.stdout, ensure_ascii=False)
 
 
 if __name__ == '__main__':

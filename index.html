@@ -869,8 +869,8 @@ function teamHtml(x, e, clash, st, isNext){
     '<div class="names">' + namesHtml(e, x.h) + '</div>' + segHtml(e, st) +
     '<div class="meta">' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '#' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
     gymHtml(e) +
-    ((r, l) => r || l ? '<div class="recrow">' + r + l + '</div>' : '')((RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<span class="rec"><b>' + esc(recTime(RES[e.id][0])) + '</b>' + (RES[e.id][1] ? '전체 ' + RES[e.id][1] + '위' : '') + '</span>' : RESULTS.show && !DONE.has(e.id) && FIN[e.id] ? '<span class="rec"><b>' + esc(recTime(FIN[e.id])) + '</b>잠정</span>' : ''),
-      (RESULTS.show && (st === 'over' || st === 'done') ? '<a class="reslink ' + (DONE.has(e.id) ? 'ok' : 'wait') + '" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">' + (DONE.has(e.id) ? '결과 확인' : FIN[e.id] ? '결과 집계중' : st === 'done' ? '결과 미확인' : '결과 집계중') + '</a>' : '')) +
+    ((r, l) => r || l ? '<div class="recrow">' + r + l + '</div>' : '')((RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<span class="rec"><b>' + esc(recTime(RES[e.id][0])) + '</b>' + (RES[e.id][1] ? '전체 ' + RES[e.id][1] + '위' : '') + '</span>' : RESULTS.show && !DONE.has(e.id) && FIN[e.id] ? '<span class="rec"><b>' + esc(recTime(FIN[e.id])) + '</b></span>' : ''),
+      (RESULTS.show && (st === 'over' || st === 'done') ? '<a class="reslink ' + (DONE.has(e.id) || FIN[e.id] ? 'ok' : 'wait') + '" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">' + (DONE.has(e.id) || FIN[e.id] ? '결과 확인' : st === 'done' ? '결과 미확인' : '결과 집계중') + '</a>' : '')) +
     (clash > 1 && st !== 'done' ? '<span class="clash">같은 시간 ' + clash + '팀 출발</span>' : '') + '</div>' +
     '<button class="x-btn" data-del="' + e.id + '" aria-label="목록에서 삭제"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
 }

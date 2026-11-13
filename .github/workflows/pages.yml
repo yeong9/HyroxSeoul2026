@@ -80,7 +80,9 @@ jobs:
       - name: 결과 확인
         if: steps.gate.outputs.run == 'true'
         run: |
-          python3 scripts/fetch_results.py _site/index.html > _site/finished.json || echo '{"done":[]}' > _site/finished.json
+          # 직전에 배포된 finished.json 을 가져와 완주 기록·상세 id 를 이어받음 (이미 확인한 팀은 다시 조회하지 않음)
+          curl -fsS --max-time 30 "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/finished.json" -o prev.json || echo '{}' > prev.json
+          python3 scripts/fetch_results.py _site/index.html prev.json > _site/finished.json || echo '{"done":[]}' > _site/finished.json
           cat _site/finished.json
 
       - uses: actions/configure-pages@v5
