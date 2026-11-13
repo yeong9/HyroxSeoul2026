@@ -3,7 +3,9 @@ name: Pages (스타트리스트·실시간 결과 반영)
 # - main 에 푸시: 사이트 배포 + 스타트리스트 새로 받기
 # - 매일 07:00 (KST) 한 번: 스타트리스트 새로 받아 사이트에 반영 (대회 마지막 날까지)
 # - 대회 전날(11/12) 19:00 (KST) 한 번 더: 스타트리스트 새로 받기
-# - 대회 기간(11/13~11/15) 08:30~22:30 (KST) 5분마다: results.hyrox.com 에서 결과와 진행 중 구간을 확인해 finished.json 으로 만들어 배포
+# - 대회 기간(11/13~11/15) 08:30~22:30 (KST): results.hyrox.com 에서 결과와 진행 중 구간을 확인해 finished.json 으로 만들어 배포
+#   GitHub 의 예약 실행(cron)은 자주 밀리거나 건너뛰어서, 한 번 돌고 나면 1분 쉬었다가 스스로 다시 실행해요(이어달리기).
+#   cron 은 끊겼을 때 다시 시작하는 용도예요.
 on:
   push:
     branches: [main]
@@ -17,6 +19,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: write
 
 concurrency:
   group: pages
@@ -89,3 +92,23 @@ jobs:
       - id: deployment
         if: steps.gate.outputs.run == 'true'
         uses: actions/deploy-pages@v4
+
+      - name: 다음 실행 이어가기 (대회 시간대에만, 이미 대기 중인 실행이 없을 때만)
+        if: always() && steps.gate.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          kd=$(TZ=Asia/Seoul date +%Y%m%d)
+          km=$((10#$(TZ=Asia/Seoul date +%H) * 60 + 10#$(TZ=Asia/Seoul date +%M)))
+          if [ "$kd" -lt 20261113 ] || [ "$kd" -gt 20261115 ] || [ "$km" -lt 500 ] || [ "$km" -gt 1345 ]; then
+            echo "대회 시간대가 아니라 이어가지 않아요"; exit 0
+          fi
+          sleep 60
+          waiting=0
+          for st in queued pending waiting; do
+            n=$(gh run list --repo "$REPO" --workflow pages.yml --status "$st" --json databaseId --jq 'length' || echo 0)
+            waiting=$((waiting + n))
+          done
+          if [ "$waiting" -gt 0 ]; then echo "이미 대기 중인 실행이 있어요"; exit 0; fi
+          gh workflow run pages.yml --repo "$REPO" --ref main
