@@ -11,7 +11,8 @@ import sys
 import time
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 
 BASE = 'https://results.hyrox.com/season-9/'
 SUFFIX = ['LR3MS4JI19A2', 'LR3MS4JI19A3', 'LR3MS4JI19A4']          # 금, 토, 일
@@ -98,6 +99,115 @@ def fetch_event(ev):
     return rows
 
 
+KST = timezone(timedelta(hours=9))
+DAY0 = (2026, 11, 13)
+SEQ = ['01', '11', '02', '12', '03', '13', '04', '14', '05', '15', '06', '16', '07', '17', '08', '18']   # 러닝1, 스키에르그, 러닝2 … 러닝8, 월볼
+LIVE_BEFORE = 5       # 출발 몇 분 전부터
+LIVE_AFTER = 135      # 출발 몇 분 뒤까지 (결과가 안 올라와도 이 시간까지만 확인)
+
+
+def to_sec(t):
+    h, m, s = (int(x) for x in t.split(':'))
+    return h * 3600 + m * 60 + s
+
+
+def parse_splits(page):
+    """상세 페이지(워크아웃 써머리)에서 끝낸 구간 수와 누적 초를 돌려줌: (끝낸 구간 수 0~16, 누적 초)
+    구간 순서: 러닝1 → 스키에르그 → 러닝2 → … → 러닝8 → 월볼 (줄 class 'f-time_01', 'f-time_11' …)"""
+    times = {}
+    for blk in re.split(r'<tr\b', page):
+        m = re.search(r'<td[^>]*f-time_(\d\d)[^>]*>\s*(\d+:\d\d:\d\d)\s*</td>', blk)
+        if m:
+            times[m.group(1)] = to_sec(m.group(2))
+    n, cum = 0, 0
+    for code in SEQ:
+        if code not in times:
+            break
+        n += 1
+        cum += times[code]
+    return n, cum
+
+
+def lookup_idp(bib, event):
+    """배번 → 상세 id (대회 리더보드 검색 JSON). 못 찾으면 ''"""
+    q = {'content': 'ajax2', 'onpage': 'leaderboard', 'func': 'getSearchResult',
+         'options[string]': bib, 'options[lang]': 'EN_CAP', 'options[event]': event}
+    data = json.loads(fetch(BASE + 'index.php?' + urllib.parse.urlencode(q), tries=2))
+    for r in data:
+        if str(r.get('start_no')) == str(bib) and r.get('id'):
+            return r['id']
+    return ''
+
+
+def fetch_live(tid, bib, event):
+    try:
+        idp = lookup_idp(bib, event)
+        if not idp:
+            return tid, None
+        q = {'content': 'detail', 'fpid': 'search', 'pid': 'search', 'idp': idp, 'lang': 'EN_CAP', 'event': event}
+        n, cum = parse_splits(fetch(BASE + '?' + urllib.parse.urlencode(q), tries=2))
+        return tid, [n, cum]
+    except Exception as e:  # noqa: BLE001
+        print(f'warn: live {tid}: {e}', file=sys.stderr)
+        return tid, None
+
+
+def load_watch(path):
+    """구간 기록을 확인할 팀 id: 소속(XON·F45범계) 출전 명단 + 기본 목록. (모든 팀을 5분마다 조회하면 결과 사이트에 부담이라 범위를 제한)"""
+    s = open(path, encoding='utf-8').read()
+    ids = set()
+    m = re.search(r'const XON_H = (\{.*?\});', s, re.S)
+    if m:
+        ids |= set(json.loads(m.group(1)).keys())
+    m = re.search(r'const F45_IDS = new Set\(\[(.*?)\]\)', s, re.S)
+    if m:
+        ids |= set(re.findall(r"'(\d-\d+)'", m.group(1)))
+    m = re.search(r'const DEFAULTS = \[(.*?)\n\];', s, re.S)
+    if m:
+        ids |= {f'{d}-{b}' for d, b in re.findall(r"\{d:(\d),b:'(\d+)'", m.group(1))}
+    return ids
+
+
+LIVE_END_PAD = 90  # 구분 종료 시각 + 90분까지
+
+
+def load_flow(path):
+    """index.html 의 FLOW(하루 흐름 시간표)에서 {요일: [(웨이브 이름 집합, 시작분, 종료분)]}"""
+    s = open(path, encoding='utf-8').read()
+    m = re.search(r'const FLOW = \{(.*?)\n\};', s, re.S)
+    flow = {}
+    if not m:
+        return flow
+    for dm in re.finditer(r'(?m)^\s*(\d):\[(.*?)\](?=,\n\s*\d:\[|\s*$)', m.group(1) + '\n', re.S):
+        d = int(dm.group(1))
+        for rm in re.finditer(r"w:\[(.*?)\],r:\['(\d\d):(\d\d)','(\d\d):(\d\d)'\]", dm.group(2)):
+            names = set(re.findall(r'"([^"]+)"|\'([^\']+)\'', rm.group(1)))
+            names = {a or b for a, b in names}
+            flow.setdefault(d, []).append((names, int(rm.group(2)) * 60 + int(rm.group(3)), int(rm.group(4)) * 60 + int(rm.group(5))))
+    return flow
+
+
+def live_candidates(data, done, now, watch=None, flow=None):
+    """시간표상 구분 시작(−5분) ~ 구분 종료+90분 사이, 이미 출발한 팀 중 배번이 있는 팀"""
+    waves = data['waves']
+    out = []
+    for d, t, bib, w, _age, _ppl in data['rows']:
+        tid = f'{d}-{bib}'
+        if tid in done or (watch is not None and tid not in watch) or not re.fullmatch(r'\d{1,2}:\d\d', t or '') or not re.fullmatch(r'\d+', str(bib)):
+            continue
+        hh, mm = (int(x) for x in t.split(':'))
+        day0 = datetime(DAY0[0], DAY0[1], DAY0[2] + d, 0, 0, tzinfo=KST)
+        start = day0 + timedelta(hours=hh, minutes=mm)
+        end = start + timedelta(minutes=LIVE_AFTER)
+        for names, _a, b in (flow or {}).get(d, []):
+            if waves[w] in names:
+                end = day0 + timedelta(minutes=b + LIVE_END_PAD)
+                break
+        if start - timedelta(minutes=LIVE_BEFORE) <= now <= end:
+            out.append((tid, str(bib), f'{prefix(waves[w])}_{SUFFIX[d]}'))
+    return out
+
+
 def load_data(path):
     s = open(path, encoding='utf-8').read()
     m = re.search(r'const DATA = (\{.*?\});\n', s, re.S)
@@ -129,8 +239,17 @@ def main():
                     if ppl and ppl <= res and (not a or not age or a == age):
                         done.add(tid)
                         recs[tid] = [total, rank, idp]
+    live = {}
+    try:
+        cands = live_candidates(data, done, datetime.now(KST), load_watch(sys.argv[1] if len(sys.argv) > 1 else 'index.html'), load_flow(sys.argv[1] if len(sys.argv) > 1 else 'index.html'))[:120]
+        with ThreadPoolExecutor(max_workers=6) as ex:
+            for tid, v in ex.map(lambda c: fetch_live(*c), cands):
+                if v is not None:
+                    live[tid] = v
+    except Exception as e:  # noqa: BLE001
+        print(f'warn: live: {e}', file=sys.stderr)
     json.dump({'updated': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-               'errors': errors, 'done': sorted(done), 'res': recs}, sys.stdout, ensure_ascii=False)
+               'errors': errors, 'done': sorted(done), 'res': recs, 'live': live}, sys.stdout, ensure_ascii=False)
 
 
 if __name__ == '__main__':
