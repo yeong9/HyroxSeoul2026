@@ -3,7 +3,7 @@ name: Pages (스타트리스트·실시간 결과 반영)
 # - main 에 푸시: 사이트 배포 + 스타트리스트 새로 받기
 # - 매일 07:00 (KST) 한 번: 스타트리스트 새로 받아 사이트에 반영 (대회 마지막 날까지)
 # - 대회 전날(11/12) 19:00 (KST) 한 번 더: 스타트리스트 새로 받기
-# - 대회 기간(11/13~11/15) 08:30~22:30 (KST): results.hyrox.com 에서 결과와 진행 중 구간을 확인해 finished.json 으로 만들어 배포
+# - 대회 기간(11/13~11/15) 08:20~22:30 (KST): results.hyrox.com 에서 결과와 진행 중 구간을 확인해 finished.json 으로 만들어 배포
 #   GitHub 의 예약 실행(cron)은 자주 밀리거나 건너뛰어서, 한 번 돌고 나면 바로 스스로 다시 실행해요(이어달리기).
 #   cron 은 끊겼을 때 다시 시작하는 용도예요.
 on:
@@ -12,7 +12,11 @@ on:
   schedule:
     - cron: '0 22 * * *'      # 매일 07:00 KST (UTC 22:00)
     - cron: '0 10 12 11 *'    # 11/12 19:00 KST 한 번 (UTC 10:00)
-    - cron: '*/5 23,0-13 * * *'   # 08:00~22:55 KST 중 실제 실행은 아래에서 08:30~22:30 으로 제한
+    - cron: '*/5 23,0-13 * * *'   # 08:00~22:55 KST 중 실제 실행은 아래에서 08:20~22:30 으로 제한
+    - cron: '17 23 * * *'         # 08:17 KST  아침 시작이 밀리거나 빠질 때를 대비한 여분 (실제 시작은 08:20부터)
+    - cron: '22 23 * * *'         # 08:22 KST
+    - cron: '27 23 * * *'         # 08:27 KST
+    - cron: '33 23 * * *'         # 08:33 KST
   workflow_dispatch:
 
 permissions:
@@ -49,8 +53,8 @@ jobs:
           elif [ "$CRON" = "0 10 12 11 *" ]; then
             refresh=true                                            # 대회 전날 19:00 한 번
             [ "$kd" != 20261112 ] && run=false
-          else                                                      # 5분마다: 대회 기간 08:30~22:30 (KST) 에만
-            if [ "$kd" -lt 20261113 ] || [ "$kd" -gt 20261115 ] || [ "$km" -lt 510 ] || [ "$km" -gt 1350 ]; then run=false; fi
+          else                                                      # 5분마다: 대회 기간 08:20~22:30 (KST) 에만
+            if [ "$kd" -lt 20261113 ] || [ "$kd" -gt 20261115 ] || [ "$km" -lt 500 ] || [ "$km" -gt 1350 ]; then run=false; fi
           fi
           echo "run=$run" >> "$GITHUB_OUTPUT"
           echo "refresh=$refresh" >> "$GITHUB_OUTPUT"

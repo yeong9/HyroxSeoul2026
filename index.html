@@ -259,6 +259,9 @@ footer p{margin:0 0 8px}
 .sseg{display:flex;align-items:center;gap:9px;margin-top:2px;font-size:22px;font-weight:800;line-height:1.1;color:var(--slab-ink);letter-spacing:-.01em}
 .sseg::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;background:var(--amber);animation:pulse 1.4s ease-in-out infinite}
 .sseg small{font-size:13px;font-weight:600;color:var(--slab-mute);margin-left:auto;letter-spacing:0}
+.lnote{margin:14px 0 0;padding-top:12px;border-top:1px solid rgba(255,255,255,.12);font-size:12.5px;line-height:1.5;color:var(--slab-mute)}
+.lnote b{color:var(--amber);font-weight:700}
+.lnote u{text-underline-offset:2px}
 .sbar{display:flex;gap:3px}
 .sbar i{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.14)}
 .sbar i.on{background:var(--amber)}
@@ -1043,7 +1046,8 @@ function renderNext(all, now){
     '<span class="cd">' + cd + '</span></div>' +
     '<div class="sday">' + DAYS[e0.d].d + '(' + DAYS[e0.d].k + ')</div>' +
     (isLive ? '' : '<div class="flaps" aria-label="' + e0.t + '">' + flap(e0.t) + '</div>') +
-    '<div class="wholist">' + shownP + (pool.length > 3 ? '<div class="wl"><span>외 ' + (pool.length - 3) + '팀</span></div>' : '') + '</div></div>';
+    '<div class="wholist">' + shownP + (pool.length > 3 ? '<div class="wl"><span>외 ' + (pool.length - 3) + '팀</span></div>' : '') + '</div>' +
+    (isLive && RESULTS.show ? '<p class="lnote">' + (LIVE_AT && Date.now() - LIVE_AT > 15 * 60000 ? '<b>실시간 정보가 잠시 갱신되지 않고 있어요.</b> ' : '') + '현재 위치는 최대 5분 정도 차이가 날 수 있어요. 정확한 상황은 <u>실시간 상세보기</u> 링크를 누르면 바로 확인할 수 있어요.</p>' : '') + '</div>';
 }
 function groupHtml(g, now){
   return '<section class="group' + (g.fin ? ' fin' : '') + '"><div class="ghead"><h2>' + esc(g.head) + '</h2>' +
