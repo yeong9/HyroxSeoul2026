@@ -175,7 +175,7 @@ def load_watch(path):
     return ids
 
 
-LIVE_END_PAD = 10  # 하루 흐름 시간표의 디비전 범위는 마지막 선수 완주까지라, 끝 시각 + 10분(기록 반영 여유)까지만 확인
+LIVE_END_PAD = 90  # 하루 흐름 시간표의 디비전 범위는 출발 시각 범위라, 마지막 출발 + 90분(완주·기록 반영)까지 확인
 
 
 def load_flow(path):
@@ -195,7 +195,7 @@ def load_flow(path):
 
 
 def live_candidates(data, done, now, watch=None, flow=None):
-    """시간표상 출발(−5분) ~ 디비전 종료 시각+10분 사이, 이미 출발한 팀 중 배번이 있는 팀"""
+    """시간표상 출발(−5분) ~ 디비전 마지막 출발 시각+90분 사이, 이미 출발한 팀 중 배번이 있는 팀"""
     waves = data['waves']
     out = []
     for d, t, bib, w, _age, _ppl in data['rows']:
