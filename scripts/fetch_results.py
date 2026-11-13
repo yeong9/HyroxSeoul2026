@@ -153,7 +153,7 @@ def fetch_live(tid, bib, event):
         q = {'content': 'detail', 'fpid': 'search', 'pid': 'search', 'idp': idp, 'lang': 'EN_CAP', 'event': event}
         page = fetch(BASE + '?' + urllib.parse.urlencode(q), tries=2)
         n, cum = parse_splits(page)
-        return tid, [n, cum, parse_finish(page)]
+        return tid, [n, cum, parse_finish(page), idp]
     except Exception as e:  # noqa: BLE001
         print(f'warn: live {tid}: {e}', file=sys.stderr)
         return tid, None
@@ -246,19 +246,20 @@ def main():
                     if ppl and ppl <= res and (not a or not age or a == age):
                         done.add(tid)
                         recs[tid] = [total, rank, idp]
-    live, fin = {}, {}
+    live, fin, idps = {}, {}, {}
     try:
         cands = live_candidates(data, done, datetime.now(KST), load_watch(sys.argv[1] if len(sys.argv) > 1 else 'index.html'), load_flow(sys.argv[1] if len(sys.argv) > 1 else 'index.html'))[:120]
         with ThreadPoolExecutor(max_workers=6) as ex:
             for tid, v in ex.map(lambda c: fetch_live(*c), cands):
                 if v is not None:
                     live[tid] = v[:2]
+                    idps[tid] = v[3]   # 상세 페이지 id: 순위가 아직 없어도 기록 페이지로 바로 연결
                     if v[2]:
                         fin[tid] = v[2]   # 순위 목록에 아직 안 올라왔어도 상세 페이지에 최종 기록이 있으면 임시로 보여줌
     except Exception as e:  # noqa: BLE001
         print(f'warn: live: {e}', file=sys.stderr)
     json.dump({'updated': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-               'errors': errors, 'done': sorted(done), 'res': recs, 'live': live, 'fin': fin}, sys.stdout, ensure_ascii=False)
+               'errors': errors, 'done': sorted(done), 'res': recs, 'live': live, 'fin': fin, 'idp': idps}, sys.stdout, ensure_ascii=False)
 
 
 if __name__ == '__main__':

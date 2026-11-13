@@ -498,6 +498,7 @@ const sortT = e => e.tbd ? '99:99' : e.t;
 const RES = {};    /* 결과: id -> [기록, 순위, 상세 id] (finished.json) */
 const LIVESEG = {};   /* 진행 중 구간: id -> [끝낸 구간 수 0~16, 누적 초] (finished.json, 소속 출전 명단·기본 목록 팀만) */
 const FIN = {};   /* 순위 목록엔 아직 없지만 상세 페이지에 최종 기록이 올라온 팀: id -> 'HH:MM:SS' */
+const IDP = {};   /* 순위 전이라도 기록 페이지로 바로 갈 수 있는 상세 id: id -> idp */
 let LIVE_AT = 0;   /* finished.json 이 만들어진 시각(ms) */
 const SEG_KO = ['러닝 1','스키에르그','러닝 2','슬레드 푸시','러닝 3','슬레드 풀','러닝 4','버피 브로드 점프','러닝 5','로잉','러닝 6','파머스 캐리','러닝 7','샌드백 런지','러닝 8','월볼'];
 function segHtml(e, st){
@@ -849,6 +850,7 @@ const recTime = t => t.replace(/^0(\d:)/, '$1');
 function resultLink(x, e){
   const r = RES[e.id];
   if (r && r[2] && RESULTS.id[e.d]) return RESULTS.url + '?content=detail&fpid=list&pid=list&idp=' + encodeURIComponent(r[2]) + '&lang=EN&event=' + encodeURIComponent(resPrefix(DATA.waves[e.w]) + '_' + RESULTS.id[e.d]) + '&pidp=ranking_nav';
+  if (IDP[e.id] && RESULTS.id[e.d]) return RESULTS.url + '?content=detail&fpid=search&pid=search&idp=' + encodeURIComponent(IDP[e.id]) + '&lang=EN_CAP&event=' + encodeURIComponent(resPrefix(DATA.waves[e.w]) + '_' + RESULTS.id[e.d]);
   return resultUrl(x, e);
 }
 function gymHtml(e){
@@ -1292,6 +1294,7 @@ window.addEventListener('resize', updateNow);
     Object.keys(RES).forEach(k => delete RES[k]); Object.assign(RES, j.res || {});
     Object.keys(LIVESEG).forEach(k => delete LIVESEG[k]); Object.assign(LIVESEG, j.live || {});
     Object.keys(FIN).forEach(k => delete FIN[k]); Object.assign(FIN, j.fin || {});
+    Object.assign(IDP, j.idp || {});
     LIVE_AT = j.updated ? Date.parse(j.updated) || 0 : 0;
     if (DONE.size + '|' + JSON.stringify(RES) + '|' + JSON.stringify(LIVESEG) + '|' + JSON.stringify(FIN) !== before) renderBoard();
   }).catch(() => {});
