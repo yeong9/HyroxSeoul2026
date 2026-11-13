@@ -873,7 +873,7 @@ function teamHtml(x, e, clash, st, isNext){
     '<div class="meta">' + (e.tbd ? '<span class="bib">시간 미확인</span>' : '<span class="bib">' + (e.b ? '#' + esc(e.b) : '배번 미확인') + '</span>') + (e.a ? '<span>' + esc(e.a) + '</span>' : '') +
     gymHtml(e) +
     ((r, l) => r || l ? '<div class="recrow">' + r + l + '</div>' : '')((RESULTS.show && DONE.has(e.id) && RES[e.id] ? '<span class="rec"><b>' + esc(recTime(RES[e.id][0])) + '</b>' + (RES[e.id][1] ? '전체 ' + RES[e.id][1] + '위' : '') + '</span>' : RESULTS.show && !DONE.has(e.id) && FIN[e.id] ? '<span class="rec"><b>' + esc(recTime(FIN[e.id])) + '</b></span>' : ''),
-      (RESULTS.show && (st === 'over' || st === 'done') ? '<a class="reslink ' + (DONE.has(e.id) || FIN[e.id] ? 'ok' : 'wait') + '" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">' + (DONE.has(e.id) || FIN[e.id] ? '결과 확인' : st === 'done' ? '결과 미확인' : '결과 집계중') + '</a>' : '')) +
+      (RESULTS.show && (st === 'over' || st === 'done' || (st === 'live' && IDP[e.id])) ? '<a class="reslink ' + (DONE.has(e.id) || IDP[e.id] ? 'ok' : 'wait') + '" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">' + (DONE.has(e.id) || IDP[e.id] ? '결과 확인' : st === 'done' ? '결과 미확인' : '결과 집계중') + '</a>' : '')) +
     (clash > 1 && st !== 'done' ? '<span class="clash">같은 시간 ' + clash + '팀 출발</span>' : '') + '</div>' +
     '<button class="x-btn" data-del="' + e.id + '" aria-label="목록에서 삭제"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
 }
@@ -1292,14 +1292,14 @@ window.addEventListener('resize', updateNow);
   /* 결과가 올라온 경기는 시간과 상관없이 종료로 표시 (GitHub Actions가 5분마다 finished.json을 갱신) */
   const loadDone = () => fetch('finished.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
     if (!j || !Array.isArray(j.done)) return;
-    const before = DONE.size + '|' + JSON.stringify(RES) + '|' + JSON.stringify(LIVESEG) + '|' + JSON.stringify(FIN);
+    const before = DONE.size + '|' + JSON.stringify(RES) + '|' + JSON.stringify(LIVESEG) + '|' + JSON.stringify(FIN) + '|' + Object.keys(IDP).length;
     DONE.clear(); j.done.forEach(id => DONE.add(id));
     Object.keys(RES).forEach(k => delete RES[k]); Object.assign(RES, j.res || {});
     Object.keys(LIVESEG).forEach(k => delete LIVESEG[k]); Object.assign(LIVESEG, j.live || {});
     Object.keys(FIN).forEach(k => delete FIN[k]); Object.assign(FIN, j.fin || {});
-    Object.assign(IDP, j.idp || {});
+    Object.keys(IDP).forEach(k => delete IDP[k]); Object.assign(IDP, j.idp || {});
     LIVE_AT = j.updated ? Date.parse(j.updated) || 0 : 0;
-    if (DONE.size + '|' + JSON.stringify(RES) + '|' + JSON.stringify(LIVESEG) + '|' + JSON.stringify(FIN) !== before) renderBoard();
+    if (DONE.size + '|' + JSON.stringify(RES) + '|' + JSON.stringify(LIVESEG) + '|' + JSON.stringify(FIN) + '|' + Object.keys(IDP).length !== before) renderBoard();
   }).catch(() => {});
   if (typeof fetch === 'function'){ loadDone(); setInterval(loadDone, 60000); }
 })();

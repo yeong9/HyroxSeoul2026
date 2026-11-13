@@ -128,6 +128,31 @@ def parse_splits(page):
     return n, cum
 
 
+def parse_checkpoint(page):
+    """상세 페이지 아래쪽 '통과 시각' 표에서 마지막으로 찍힌 지점을 보고 끝낸 구간 수(0~16)를 돌려줌 (표가 없으면 -1).
+    요약 표(러닝·스테이션 시간)는 한 박자 늦게 채워지거나 비어 보일 때가 있어서, 통과 지점이 더 믿을 만해요.
+    지점 순서: 스테이션 1~7 마다 [Rox In, 스테이션 In, 스테이션 Out, Rox Out] 4개, 이어서 월볼 In, Total (총 30개)"""
+    vals = []
+    for blk in re.split(r'<tr\b', page):
+        m = re.search(r'<td[^>]*time_day[^>]*>\s*([^<]*?)\s*</td>', blk)
+        if m:
+            vals.append(m.group(1))
+    if len(vals) != 30:
+        return -1
+    last = -1
+    for i, v in enumerate(vals):
+        if re.fullmatch(r'\d{1,2}:\d\d:\d\d', v):
+            last = i
+    if last < 0:
+        return 0
+    if last == 29:
+        return 16
+    if last == 28:
+        return 15
+    k, r = last // 4 + 1, last % 4
+    return 2 * k - 1 if r < 3 else 2 * k
+
+
 def parse_finish(page):
     """상세 페이지의 '최종 기록(Overall Time)'. 아직 안 들어왔으면 ''"""
     m = re.search(r'<td[^>]*f-time_finish_netto[^>]*>\s*(\d+:\d\d:\d\d)\s*</td>', page)
@@ -153,6 +178,7 @@ def fetch_live(tid, bib, event, idp=''):
         q = {'content': 'detail', 'fpid': 'search', 'pid': 'search', 'idp': idp, 'lang': 'EN_CAP', 'event': event}
         page = fetch(BASE + '?' + urllib.parse.urlencode(q), tries=2)
         n, cum = parse_splits(page)
+        n = max(n, parse_checkpoint(page))
         return tid, [n, cum, parse_finish(page), idp]
     except Exception as e:  # noqa: BLE001
         print(f'warn: live {tid}: {e}', file=sys.stderr)
@@ -308,7 +334,9 @@ def main():
                 chk[tid] = [nowm, v[0]]
                 idps[tid] = v[3]   # 상세 페이지 id: 순위가 아직 없어도 기록 페이지로 바로 연결
                 if tid not in fin and not v[2]:
-                    live[tid] = [v[0], v[1], nowm]   # 팀별 확인 시각(분)도 같이 남겨서 오래된 정보는 화면에서 숨김
+                    before = live.get(tid)
+                    n = max(v[0], before[0] if before else 0)   # 구간이 뒤로 가는 일(러닝↔스키 왔다갔다)이 없도록 이전보다 낮은 값은 무시
+                    live[tid] = [n, v[1], nowm]   # 팀별 확인 시각(분)도 같이 남겨서 오래된 정보는 화면에서 숨김
                 else:
                     live.pop(tid, None)
                 if v[2]:
