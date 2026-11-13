@@ -253,6 +253,7 @@ footer p{margin:0 0 8px}
 .slab.islive .wholist{margin-top:12px;gap:14px}
 .wl.lv{flex-direction:column;gap:6px;align-items:stretch}
 .wl.lv .wt{display:flex;gap:10px;align-items:baseline}
+.slink{margin-left:auto;white-space:nowrap;font-size:13px;font-weight:700;color:var(--amber);text-decoration:none;border-bottom:1.5px solid var(--amber);align-self:center}
 .sseg{display:flex;align-items:center;gap:9px;font-size:24px;font-weight:800;line-height:1.1;color:var(--slab-ink);letter-spacing:-.01em}
 .sseg::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;background:var(--amber);animation:pulse 1.4s ease-in-out infinite}
 .sseg small{font-size:13px;font-weight:600;color:var(--slab-mute);margin-left:auto;letter-spacing:0}
@@ -1022,7 +1023,7 @@ function renderNext(all, now){
   const pool = isLive ? live : up.length ? up.filter(({e}) => e.ms === up[0].e.ms) : over;
   const e0 = pool[0].e;
   const cd = isLive ? (pool.length > 1 ? pool.length + '팀' : '출발 후 ' + elapsed(e0.ms, now)) : isOver ? '출발 후 ' + elapsed(e0.ms, now) : until(e0.ms - now);
-  const shownP = pool.slice(0, 3).map(({x, e}) => (function(){ const sg = slabSegHtml(e, isLive ? 'live' : isOver ? 'over' : 'up'); const h = '<b>' + esc(teamName(x, e)) + '</b><span>' + esc(divs[e.w].label) + (isLive ? ' · ' + e.t + ' 출발' : '') + '</span>'; return sg ? '<div class="wl lv"><div class="wt">' + h + '</div>' + sg + '</div>' : '<div class="wl">' + h + '</div>'; })()).join('');
+  const shownP = pool.slice(0, 3).map(({x, e}) => (function(){ const sg = slabSegHtml(e, isLive ? 'live' : isOver ? 'over' : 'up'); const h = '<b>' + esc(teamName(x, e)) + '</b><span>' + esc(divs[e.w].label) + (isLive ? ' · ' + e.t + ' 출발' : '') + '</span>'; const lk = isLive && IDP[e.id] && RESULTS.show ? '<a class="slink" href="' + resultLink(x, e) + '" target="_blank" rel="noopener">실시간 상세보기</a>' : ''; return sg ? '<div class="wl lv"><div class="wt">' + h + lk + '</div>' + sg + '</div>' : '<div class="wl">' + h + lk + '</div>'; })()).join('');
   el.innerHTML = '<div class="slab' + (isLive ? ' islive' : '') + '"><div class="stop"><span class="chip ' + (isLive ? 'live' : isOver ? 'over' : 'next') + '">' + (isLive ? '<i></i>진행 중' : isOver ? '곧 종료' : '다음 출발') + '</span>' +
     '<span class="cd">' + cd + '</span></div>' +
     '<div class="sday">' + DAYS[e0.d].d + '(' + DAYS[e0.d].k + ')</div>' +
@@ -1292,6 +1293,7 @@ window.addEventListener('resize', updateNow);
   /* 결과가 올라온 경기는 시간과 상관없이 종료로 표시 (GitHub Actions가 5분마다 finished.json을 갱신) */
   const loadDone = () => fetch('finished.json?t=' + Date.now(), {cache: 'no-store'}).then(r => r.ok ? r.json() : null).then(j => {
     if (!j || !Array.isArray(j.done)) return;
+    if (j.updated && LIVE_AT && Date.parse(j.updated) < LIVE_AT) return;   /* 배포 직후 옛 서버가 예전 파일을 주는 경우가 있어서, 이미 받은 것보다 오래된 파일은 무시 */
     const before = DONE.size + '|' + JSON.stringify(RES) + '|' + JSON.stringify(LIVESEG) + '|' + JSON.stringify(FIN) + '|' + Object.keys(IDP).length;
     DONE.clear(); j.done.forEach(id => DONE.add(id));
     Object.keys(RES).forEach(k => delete RES[k]); Object.assign(RES, j.res || {});
